@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+import numpy as np
+
 
 @dataclass
 class AcceptanceResult:
@@ -39,6 +41,12 @@ def run_acceptance(
     passed = True
 
     for res in backcalc_results:
+        if not np.isfinite(res.predicted_concentration) or not np.isfinite(
+            res.diluted_concentration
+        ):
+            passed = False
+            reasons.append(f"Sample {res.sample_name} has non-finite concentration")
+            continue
         if res.below_lloq or res.above_uloq:
             passed = False
             reasons.append(f"Sample {res.sample_name} outside reportable range")

@@ -38,6 +38,20 @@ def test_back_calculate_rejects_nan_response():
         back_calculate(sample, result.fit_result)
 
 
+def test_back_calculate_rejects_response_outside_curve_range():
+    """Back-calculation should not silently return NaN when inversion fails."""
+    x = [0.1, 0.3, 1.0, 10.0, 100.0]
+    y = [2.0, 5.0, 20.0, 80.0, 98.0]
+
+    curve = StandardCurve(x, y, model="hill4p")
+    result = curve.fit()
+
+    sample = Sample(name="too_high", response=1000.0, dilution_factor=1.0)
+
+    with pytest.raises(ValueError, match="outside the fitted curve range"):
+        back_calculate(sample, result.fit_result)
+
+
 def test_back_calculate_flags_lloq_uloq():
     """Back-calculation should flag below LLOQ and above ULOQ."""
     x = [0.1, 0.3, 1.0, 10.0, 100.0]

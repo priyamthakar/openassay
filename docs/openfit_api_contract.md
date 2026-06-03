@@ -70,4 +70,5 @@ Fit(
 - **Exposed**: Yes, as of `agent/openfit-downstream-api` branch.
 - **Shape**: `(n_params, n_params)`
 - **Order**: Matches `model.param_names` exactly.
-- **Fallback**: If Jacobian is singular, filled with `np.nan`.
+- **Fallback**: If Jacobian inversion fails because it is singular, filled with
+  `np.nan` and standard errors are set to `inf`.

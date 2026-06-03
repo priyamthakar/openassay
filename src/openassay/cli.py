@@ -1,4 +1,5 @@
 """CLI for openassay."""
+
 from __future__ import annotations
 
 import sys
@@ -28,6 +29,7 @@ def _check_cli() -> None:
 
 
 if typer is not None:
+
     @app.command()
     def version() -> None:
         """Print openassay version."""

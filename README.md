@@ -19,8 +19,21 @@ bioanalytical acceptance, it belongs in openassay.
 
 ## Status
 
-Planning/scaffold stage. See `OPENASSAY_AGENT_LOOP.md` for the implementation
-roadmap.
+v0.1.0 implementation branch. Current scope includes standard-curve fitting,
+sample back-calculation, basic LLOQ/ULOQ range checks, HTML/Markdown reports,
+and CLI entry points. See `OPENASSAY_AGENT_LOOP.md` for the future roadmap.
+
+## Current API
+
+- `StandardCurve(x, y, model="hill4p", weights="1/y2")` fits 4PL/5PL curves
+  through openfit. Inputs with NaN or Inf are rejected.
+- `back_calculate(sample, fit_result, lloq=None, uloq=None)` performs inverse
+  prediction and applies dilution after inversion. Responses outside the fitted
+  curve range raise `ValueError` rather than returning a non-finite result.
+- `run_acceptance(results)` fails samples outside LLOQ/ULOQ and defensively
+  fails any non-finite predicted or diluted concentration.
+- HTML and Markdown reports include the qualified bioanalytical-scientist
+  review disclaimer.
 
 ## Non-Goals
 

@@ -72,7 +72,7 @@ def generate_html_report(
             f"<td>{res.diluted_concentration:.4g}</td><td>{res.below_lloq}</td><td>{res.above_uloq}</td></tr>\n"
         )
 
-    html_content += """    </table>
+    html_content += f"""    </table>
 
     <h2>Acceptance</h2>
     <p>Passed: {acceptance_result.passed}</p>
@@ -81,7 +81,7 @@ def generate_html_report(
     for reason in acceptance_result.reasons:
         html_content += f"        <li>{reason}</li>\n"
 
-    html_content += """    </ul>
+    html_content += f"""    </ul>
 
     <p class="disclaimer">{DISCLAIMER}</p>
 </body>

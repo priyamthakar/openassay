@@ -57,7 +57,7 @@ def back_calculate(
     Raises
     ------
     ValueError
-        If sample response is NaN or Inf.
+        If sample response is NaN/Inf or inverse prediction fails.
     """
     if not np.isfinite(sample.response):
         raise ValueError(f"Sample response must be finite, got {sample.response}")
@@ -81,15 +81,22 @@ def back_calculate(
 
     try:
         res = scipy.optimize.root_scalar(objective, bracket=[x_min, x_max], method="brentq")
-        if not res.converged:
-            raise ValueError("Root finding did not converge")
-        predicted = float(res.root)
-    except Exception:
-        # Fallback: if root finding fails, return NaN
-        predicted = float("nan")
+    except ValueError as exc:
+        raise ValueError(
+            f"Sample {sample.name!r} response is outside the fitted curve range."
+        ) from exc
+
+    if not res.converged:
+        raise ValueError(f"Inverse prediction did not converge for sample {sample.name!r}.")
+
+    predicted = float(res.root)
+    if not np.isfinite(predicted):
+        raise ValueError(f"Inverse prediction produced a non-finite value for {sample.name!r}.")
 
     # Apply dilution factor AFTER inverse prediction
     diluted = predicted * sample.dilution_factor
+    if not np.isfinite(diluted):
+        raise ValueError(f"Diluted concentration is non-finite for sample {sample.name!r}.")
 
     below_lloq = lloq is not None and diluted < lloq
     above_uloq = uloq is not None and diluted > uloq
