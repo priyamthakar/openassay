@@ -88,6 +88,8 @@ deprecation shim where practical).
   surface is now pinned by an exact `__all__` regression test.
 - Added `docs/api/reference.md` and refreshed the README around the current
   v1.0 API surface.
+- Expanded bundled examples to cover plate parsing, parallelism/potency, and
+  ADA CLI workflows with smoke-test coverage.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

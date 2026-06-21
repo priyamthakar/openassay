@@ -1,0 +1,6 @@
+well,role,sample,response,replicate_group
+A1,blank,blank,2.0,blank
+B1,qc,qc-low,11.0,qc-low
+B2,qc,qc-low,13.0,qc-low
+C1,unknown,sample-1,40.0,sample-1
+C2,unknown,sample-1,42.0,sample-1

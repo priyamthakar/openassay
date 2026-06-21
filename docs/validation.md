@@ -36,7 +36,8 @@ Covered in the current test suite:
   disclaimer, and binary report smoke tests parse the generated artifacts.
 - Missing optional report dependencies for PDF and DOCX raise `ReportError`
   with guidance to install `openassay[reports]`.
-- Bundled CSV examples run through the CLI and generate reports.
+- Bundled CSV/JSON examples run through the CLI for reports, plate parsing,
+  parallelism/potency, and ADA cut-point workflows.
 - A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,
   back-calculation, and replicate acceptance checks.
 
@@ -46,6 +47,10 @@ The repository includes a small illustrative CSV workflow:
 
 - `examples/data/standards.csv`: five standard-curve points.
 - `examples/data/samples.csv`: three unknown samples with dilution factors.
+- `examples/data/plate_tidy.csv`: tidy plate parse example.
+- `examples/data/parallel_reference.json` and `parallel_test.json`: gated
+  relative-potency example.
+- `examples/data/ada_screen.csv` and `ada_confirm.csv`: ADA cut-point examples.
 
 The repository also includes a validation fixture:
 
