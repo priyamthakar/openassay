@@ -67,6 +67,8 @@ deprecation shim where practical).
   run-normalized multiplier.
 - Raw or log-transformed ADA cut-point estimation, with log results
   back-transformed to the reporting scale.
+- Stored ADA cut-point validation fixture for screening, confirmatory,
+  nonparametric, and floating-multiplier outputs.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

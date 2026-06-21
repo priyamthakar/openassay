@@ -45,6 +45,8 @@ The repository also includes a validation fixture:
 - `tests/fixtures/validation/m10_calibration_qc.csv`
 - `tests/fixtures/validation/m10_calibration_qc_expected.json`
 - `tests/fixtures/validation/parallelism_reference.json`
+- `tests/fixtures/validation/ada_cut_points.csv`
+- `tests/fixtures/validation/ada_cut_points_expected.json`
 
 This fixture is generated from a known 4PL curve:
 
@@ -100,6 +102,11 @@ Added:
 - USP <1032>/<1034> are cited only as conceptual sources for requiring
   demonstrated parallelism before relative potency is reportable; paywalled text
   is not reproduced.
+- Stored ADA screening/confirmatory cut-point fixture in
+  `tests/fixtures/validation/ada_cut_points.csv`, with expected outputs in
+  `ada_cut_points_expected.json`. The expected cut points are hand-computed from
+  documented formulas and cite only public concepts from Shankar et al. 2008,
+  FDA 2019, and EMA immunogenicity guidance.
 
 Not yet added:
 

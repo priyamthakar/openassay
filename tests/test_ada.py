@@ -92,6 +92,24 @@ def test_screen_cut_point_floating_log_multiplier() -> None:
     assert result.cut_point == pytest.approx(1.093493)
 
 
+def test_screen_cut_point_accepts_unbalanced_design() -> None:
+    """Unbalanced multi-run designs remain evaluable when biological variability exists."""
+    data = [
+        {"sample_id": "d1", "run_id": "r1", "response": 100.0},
+        {"sample_id": "d2", "run_id": "r1", "response": 102.0},
+        {"sample_id": "d3", "run_id": "r1", "response": 101.0},
+        {"sample_id": "d1", "run_id": "r2", "response": 108.0},
+        {"sample_id": "d2", "run_id": "r2", "response": 110.0},
+    ]
+
+    result = screen_cut_point(data)
+
+    assert result.evaluable is True
+    assert result.n_samples == 3
+    assert result.n_runs == 2
+    assert result.cut_point == pytest.approx(111.592698)
+
+
 def test_confirm_cut_point_uses_confirmatory_default_fp_rate() -> None:
     """Confirmatory cut point defaults to the stricter 1% false-positive rate."""
     result = confirm_cut_point(confirmatory_controls())

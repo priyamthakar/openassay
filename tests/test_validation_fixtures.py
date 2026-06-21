@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 
 from openassay.acceptance import run_acceptance
+from openassay.ada import confirm_cut_point, screen_cut_point
 from openassay.backcalc import Sample, back_calculate_many
 from openassay.curve import fit_standard_curve
 from openassay.potency import relative_potency
@@ -73,3 +74,28 @@ def test_parallelism_reference_fixture_matches_expected_ratios_and_potency() -> 
     assert result.point_estimate == pytest.approx(expected["relative_potency"])
     for name, ratio in expected["parameter_ratios"].items():
         assert result.parallelism.parameter_ratios[name] == pytest.approx(ratio)
+
+
+def test_ada_cut_point_validation_fixture_matches_expected_outputs() -> None:
+    """Stored ADA fixture should reproduce expected screening and confirmatory cut points."""
+    data = pd.read_csv(FIXTURE_DIR / "ada_cut_points.csv")
+    expected = json.loads((FIXTURE_DIR / "ada_cut_points_expected.json").read_text())
+    records = data.to_dict(orient="records")
+
+    screening = screen_cut_point(records)
+    screening_nonparametric = screen_cut_point(
+        records,
+        method="nonparametric",
+        fp_rate=float(expected["screening"]["fp_rate"]),
+    )
+    screening_floating = screen_cut_point(records, cut_point_type="floating")
+    confirmatory = confirm_cut_point(records)
+
+    assert screening.cut_point == pytest.approx(expected["screening"]["parametric_cut_point"])
+    assert screening_nonparametric.cut_point == pytest.approx(
+        expected["screening"]["nonparametric_cut_point"]
+    )
+    assert screening_floating.cut_point == pytest.approx(
+        expected["screening"]["floating_multiplier"]
+    )
+    assert confirmatory.cut_point == pytest.approx(expected["confirmatory"]["parametric_cut_point"])
