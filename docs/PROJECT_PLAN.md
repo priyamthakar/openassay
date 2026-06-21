@@ -242,8 +242,9 @@ carries enough metadata to reconstruct it.
   which were excluded as anchors.
 - `PlateLayout` / `PlateData`: §8 (v0.2.0).
 - `ParallelismResult`, `PotencyResult`, `ADAResult`: §8 (later phases).
-- `RunReport`: the assembled object a renderer consumes — curve, samples,
-  acceptance, range, environment/provenance, disclaimer.
+- Reports currently consume the public curve, back-calculation, and acceptance
+  result objects directly through `report_run`; a separate `RunReport` assembly
+  model is deferred until it removes real duplication across renderers.
 
 ### 5.3 Provenance block (every result)
 
@@ -582,7 +583,7 @@ never `--no-verify`, never force-push.
 ### v1.0.0 — Stable Release
 
 - **Goal:** freeze public API, complete docs/examples, ship to PyPI.
-- **Work:** finalize `__all__`; generate `docs/api/`; align
+- **Work:** finalize `__all__` with an exact regression test; generate `docs/api/`; align
   README/CHANGELOG/ROADMAP; complete runnable examples for every workflow;
   CI matrix green on Windows/macOS/Linux × Python 3.10–3.12.
 - **Gate:** `python -m build`, `twine check dist/*`, full pytest, ruff, mypy,

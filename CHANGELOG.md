@@ -84,6 +84,8 @@ deprecation shim where practical).
 - Missing optional dependency checks now cover both PDF and DOCX report paths.
 - Project plan and validation evidence updated to mark v0.7.0 reporting
   complete and route the next phase to v1.0.0 hardening.
+- Public roadmap status aligned through v0.7.0, and the top-level v1.0 API
+  surface is now pinned by an exact `__all__` regression test.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

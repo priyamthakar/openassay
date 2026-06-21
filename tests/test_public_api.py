@@ -4,6 +4,45 @@ from __future__ import annotations
 
 import openassay as oa
 
+FROZEN_PUBLIC_API = [
+    "AcceptanceResult",
+    "ADAResult",
+    "BackCalcResult",
+    "BatchCollapsedReplicate",
+    "BatchItemResult",
+    "BatchResult",
+    "CalibrationResult",
+    "LevelStats",
+    "RangeResult",
+    "PlateData",
+    "PlateLayout",
+    "PlateWell",
+    "ParallelismResult",
+    "PotencyResult",
+    "CollapsedReplicate",
+    "Sample",
+    "StandardCurve",
+    "Well",
+    "back_calculate",
+    "back_calculate_many",
+    "aggregate_collapsed_replicates",
+    "confirm_cut_point",
+    "fit_standard_curve",
+    "determine_lloq_uloq",
+    "relative_potency",
+    "read_plate",
+    "report_run",
+    "run_batch",
+    "run_acceptance",
+    "screen_cut_point",
+    "test_parallelism",
+]
+
+
+def test_public_api_all_matches_frozen_v1_surface() -> None:
+    """The top-level package exports are the v1.0 public API contract."""
+    assert oa.__all__ == FROZEN_PUBLIC_API
+
 
 def test_public_functional_api_exports() -> None:
     """Functions shown in docs should be importable from openassay."""
