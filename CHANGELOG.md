@@ -32,6 +32,7 @@ deprecation shim where practical).
   response validation.
 - Mean blank subtraction and replicate response collapse for parsed plate data.
 - Missing expected-well detection for plate layouts and tidy plate ingestion.
+- Matrix-format plate CSV reader using a separate tidy layout map.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

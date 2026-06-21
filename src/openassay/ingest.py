@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from openassay.plate import PlateData, PlateLayout, make_plate_well
+from openassay.plate import PlateData, PlateLayout, Well, make_plate_well
 
 
 def _optional_float(value: Any) -> float | None:
@@ -23,16 +23,7 @@ def _optional_string(value: Any) -> str | None:
     return text if text else None
 
 
-def read_plate(
-    path: str | Path,
-    *,
-    format: str = "tidy",
-    expected_wells: list[str] | None = None,
-) -> PlateData:
-    """Read tidy long-format plate CSV data."""
-    if format != "tidy":
-        raise ValueError("Only tidy plate format is currently supported.")
-
+def _read_tidy_plate(path: str | Path, expected_wells: list[str] | None = None) -> PlateData:
     df = pd.read_csv(path)
     required = {"well", "role", "response"}
     missing = required.difference(df.columns)
@@ -54,3 +45,66 @@ def read_plate(
     if expected_wells is not None:
         layout.require_wells(expected_wells)
     return PlateData(layout=layout)
+
+
+def _read_matrix_plate(
+    path: str | Path,
+    *,
+    layout: str | Path,
+    expected_wells: list[str] | None = None,
+) -> PlateData:
+    matrix = pd.read_csv(path, index_col=0)
+    layout_df = pd.read_csv(layout)
+    required = {"well", "role"}
+    missing = required.difference(layout_df.columns)
+    if missing:
+        raise ValueError(f"Plate layout is missing required columns: {sorted(missing)}")
+
+    responses: dict[str, float] = {}
+    for row_label, row in matrix.iterrows():
+        for column_label, value in row.items():
+            well = str(Well.parse(f"{row_label}{column_label}"))
+            responses[well] = float(value)
+
+    wells = []
+    for row in layout_df.itertuples(index=False):
+        well = str(row.well).strip().upper()
+        if well not in responses:
+            raise ValueError(f"Layout references well {well!r} missing from matrix data.")
+        wells.append(
+            make_plate_well(
+                well=well,
+                role=str(row.role),
+                response=responses[well],
+                sample_name=_optional_string(getattr(row, "sample", None)),
+                nominal_concentration=_optional_float(getattr(row, "concentration", None)),
+                replicate_group=_optional_string(getattr(row, "replicate_group", None)),
+            )
+        )
+
+    plate_layout = PlateLayout(wells)
+    if expected_wells is not None:
+        plate_layout.require_wells(expected_wells)
+    return PlateData(layout=plate_layout)
+
+
+def read_plate(
+    path: str | Path,
+    *,
+    format: str = "tidy",
+    layout: str | Path | None = None,
+    expected_wells: list[str] | None = None,
+) -> PlateData:
+    """Read plate CSV data."""
+    normalized_format = format.lower()
+    if normalized_format == "tidy":
+        return _read_tidy_plate(path, expected_wells=expected_wells)
+    if normalized_format == "matrix":
+        if layout is None:
+            raise ValueError("Matrix plate format requires a layout CSV path.")
+        return _read_matrix_plate(
+            path,
+            layout=layout,
+            expected_wells=expected_wells,
+        )
+    raise ValueError("format must be 'tidy' or 'matrix'.")

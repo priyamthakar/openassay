@@ -79,6 +79,47 @@ def test_read_plate_can_require_expected_wells(tmp_path) -> None:
         read_plate(path, expected_wells=["A1", "A2"])
 
 
+def test_read_plate_matrix_csv_with_layout_map(tmp_path) -> None:
+    """Matrix plate input should use a separate tidy layout map."""
+    matrix_path = tmp_path / "matrix.csv"
+    layout_path = tmp_path / "layout.csv"
+    matrix_path.write_text(
+        "\n".join(
+            [
+                ",1,2,3",
+                "A,10.0,11.0,12.0",
+                "B,20.0,21.0,22.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    layout_path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,concentration,replicate_group",
+                "A1,standard,std-1,1.0,std-1",
+                "A2,standard,std-1,1.0,std-1",
+                "B1,unknown,sample-1,,sample-1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    plate = read_plate(matrix_path, format="matrix", layout=layout_path)
+
+    assert [str(well.well) for well in plate.wells] == ["A1", "A2", "B1"]
+    assert [well.response for well in plate.wells] == [10.0, 11.0, 20.0]
+
+
+def test_read_plate_matrix_requires_layout(tmp_path) -> None:
+    """Matrix format should fail clearly without a layout map."""
+    matrix_path = tmp_path / "matrix.csv"
+    matrix_path.write_text(",1\nA,10.0\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="requires a layout"):
+        read_plate(matrix_path, format="matrix")
+
+
 def test_read_plate_rejects_non_finite_response(tmp_path) -> None:
     """NaN plate responses should raise rather than being dropped."""
     path = tmp_path / "plate.csv"
