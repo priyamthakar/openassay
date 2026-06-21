@@ -23,6 +23,8 @@ deprecation shim where practical).
   `FitResult.params` instead of private openfit attributes.
 - Functional API wrappers: `fit_standard_curve`, `back_calculate_many`, and
   `report_run`.
+- `determine_lloq_uloq` and `RangeResult` for reportable-range decisions from
+  accuracy/precision level summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

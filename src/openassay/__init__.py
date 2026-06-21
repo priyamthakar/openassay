@@ -7,6 +7,7 @@ __version__ = "0.1.0"
 from openassay.acceptance import AcceptanceResult, LevelStats, run_acceptance
 from openassay.backcalc import BackCalcResult, Sample, back_calculate, back_calculate_many
 from openassay.curve import CalibrationResult, StandardCurve, fit_standard_curve
+from openassay.range import RangeResult, determine_lloq_uloq
 from openassay.report import report_run
 
 __all__ = [
@@ -14,11 +15,13 @@ __all__ = [
     "BackCalcResult",
     "CalibrationResult",
     "LevelStats",
+    "RangeResult",
     "Sample",
     "StandardCurve",
     "back_calculate",
     "back_calculate_many",
     "fit_standard_curve",
+    "determine_lloq_uloq",
     "report_run",
     "run_acceptance",
 ]
