@@ -33,6 +33,7 @@ def test_screen_cut_point_parametric_uses_false_positive_rate() -> None:
     assert result.evaluable is True
     assert result.cut_point == pytest.approx(105.397226)
     assert result.cut_point_type == "fixed"
+    assert result.transform == "raw"
     assert result.fp_rate == 0.05
     assert result.n_samples == 2
     assert result.n_runs == 2
@@ -62,6 +63,33 @@ def test_screen_cut_point_floating_multiplier_normalizes_by_run() -> None:
     assert result.cut_point_type == "floating"
     assert result.cut_point == pytest.approx(1.090443)
     assert "run-normalized multiplier" in " ".join(result.reasons)
+
+
+def test_screen_cut_point_log_transform_back_transforms_cut_point() -> None:
+    """Log-transformed cut points should be reported on the original scale."""
+    result = screen_cut_point(negative_controls(), transform="log")
+
+    assert result.evaluable is True
+    assert result.transform == "log"
+    assert result.cut_point == pytest.approx(105.455243)
+    assert "log-transformed" in " ".join(result.reasons)
+
+
+def test_screen_cut_point_floating_log_multiplier() -> None:
+    """Floating log mode should report a run-normalized multiplier."""
+    data = [
+        {"sample_id": "d1", "run_id": "r1", "response": 100.0},
+        {"sample_id": "d2", "run_id": "r1", "response": 110.0},
+        {"sample_id": "d1", "run_id": "r2", "response": 200.0},
+        {"sample_id": "d2", "run_id": "r2", "response": 220.0},
+    ]
+
+    result = screen_cut_point(data, cut_point_type="floating", transform="log")
+
+    assert result.evaluable is True
+    assert result.cut_point_type == "floating"
+    assert result.transform == "log"
+    assert result.cut_point == pytest.approx(1.093493)
 
 
 def test_confirm_cut_point_uses_confirmatory_default_fp_rate() -> None:
@@ -107,6 +135,15 @@ def test_screen_cut_point_rejects_invalid_cut_point_type() -> None:
     """Cut-point type must be explicit when not fixed/floating."""
     with pytest.raises(ValueError, match="cut_point_type"):
         screen_cut_point(negative_controls(), cut_point_type="adaptive")
+
+
+def test_screen_cut_point_rejects_log_transform_with_non_positive_value() -> None:
+    """Log transforms must fail explicitly for non-positive values."""
+    data = negative_controls()
+    data[0]["response"] = 0.0
+
+    with pytest.raises(ValueError, match="positive"):
+        screen_cut_point(data, transform="log")
 
 
 def test_ada_cut_point_refuses_single_run() -> None:

@@ -157,11 +157,15 @@ def test_cli_ada_screen_reports_cut_point(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    result = runner.invoke(app, ["ada", "screen", str(data_path), "--cut-point-type", "floating"])
+    result = runner.invoke(
+        app,
+        ["ada", "screen", str(data_path), "--cut-point-type", "floating", "--transform", "log"],
+    )
 
     assert result.exit_code == 0
     assert "Evaluable: True" in result.output
     assert "Cut-point type: floating" in result.output
+    assert "Transform: log" in result.output
     assert "Cut point:" in result.output
 
 
@@ -186,4 +190,5 @@ def test_cli_ada_confirm_reports_not_evaluable(tmp_path) -> None:
     assert result.exit_code == 0
     assert "Evaluable: False" in result.output
     assert "Cut-point type: fixed" in result.output
+    assert "Transform: raw" in result.output
     assert "Cut point: not evaluable" in result.output

@@ -21,6 +21,7 @@ class ADAResult:
     method: str
     fp_rate: float
     cut_point_type: str
+    transform: str
     n_samples: int
     n_runs: int
     reasons: list[str]
@@ -78,6 +79,11 @@ def _validate_cut_point_type(cut_point_type: str) -> None:
         raise ValueError("cut_point_type must be 'fixed' or 'floating'.")
 
 
+def _validate_transform(transform: str) -> None:
+    if transform not in {"raw", "log"}:
+        raise ValueError("transform must be 'raw' or 'log'.")
+
+
 def _biological_variability(data: Sequence[Any]) -> tuple[int, int, list[str]]:
     sample_ids = {str(_field(record, "sample_id", "donor_id", "sample")) for record in data}
     run_ids = {str(_field(record, "run_id", "run")) for record in data}
@@ -120,6 +126,20 @@ def _floating_values(
     return np.asarray(normalized, dtype=np.float64)
 
 
+def _transform_values(values: np.ndarray, transform: str) -> np.ndarray:
+    if transform == "raw":
+        return values
+    if np.any(values <= 0.0):
+        raise ValueError("log-transformed ADA cut points require positive values.")
+    return np.asarray(np.log(values), dtype=np.float64)
+
+
+def _inverse_transform_cut_point(cut_point: float, transform: str) -> float:
+    if transform == "raw":
+        return cut_point
+    return float(np.exp(cut_point))
+
+
 def _evaluate_cut_point(
     data: Sequence[Any],
     *,
@@ -129,10 +149,12 @@ def _evaluate_cut_point(
     label: str,
     outlier_method: str,
     cut_point_type: str,
+    transform: str,
 ) -> ADAResult:
     _validate_method(method)
     _validate_fp_rate(fp_rate)
     _validate_cut_point_type(cut_point_type)
+    _validate_transform(transform)
     n_samples, n_runs, variability_reasons = _biological_variability(data)
     if variability_reasons:
         return ADAResult(
@@ -141,6 +163,7 @@ def _evaluate_cut_point(
             method=method,
             fp_rate=fp_rate,
             cut_point_type=cut_point_type,
+            transform=transform,
             n_samples=n_samples,
             n_runs=n_runs,
             reasons=variability_reasons,
@@ -156,6 +179,7 @@ def _evaluate_cut_point(
             method=method,
             fp_rate=fp_rate,
             cut_point_type=cut_point_type,
+            transform=transform,
             n_samples=n_samples,
             n_runs=n_runs,
             reasons=[f"{label} cut point requires at least two observations."],
@@ -172,13 +196,21 @@ def _evaluate_cut_point(
     if cut_point_type == "floating":
         analysis_values = _floating_values(data, kept_indices, values)
         reasons.append("Floating cut point estimated as a run-normalized multiplier.")
+    analysis_values = _transform_values(analysis_values, transform)
+    if transform == "log":
+        reasons.append("Cut point estimated on log-transformed values.")
+    cut_point = _inverse_transform_cut_point(
+        _cut_point(analysis_values, method=method, fp_rate=fp_rate),
+        transform,
+    )
 
     return ADAResult(
         evaluable=True,
-        cut_point=_cut_point(analysis_values, method=method, fp_rate=fp_rate),
+        cut_point=cut_point,
         method=method,
         fp_rate=fp_rate,
         cut_point_type=cut_point_type,
+        transform=transform,
         n_samples=n_samples,
         n_runs=n_runs,
         reasons=reasons,
@@ -193,6 +225,7 @@ def screen_cut_point(
     fp_rate: float = DEFAULT_SCREENING_FP_RATE,
     outlier_method: str = "none",
     cut_point_type: str = "fixed",
+    transform: str = "raw",
 ) -> ADAResult:
     """Estimate an ADA screening cut point from biological negative controls."""
     return _evaluate_cut_point(
@@ -203,6 +236,7 @@ def screen_cut_point(
         label="Screening",
         outlier_method=outlier_method,
         cut_point_type=cut_point_type,
+        transform=transform,
     )
 
 
@@ -213,6 +247,7 @@ def confirm_cut_point(
     fp_rate: float = DEFAULT_CONFIRMATORY_FP_RATE,
     outlier_method: str = "none",
     cut_point_type: str = "fixed",
+    transform: str = "raw",
 ) -> ADAResult:
     """Estimate an ADA confirmatory cut point from percent-inhibition data."""
     return _evaluate_cut_point(
@@ -223,4 +258,5 @@ def confirm_cut_point(
         label="Confirmatory",
         outlier_method=outlier_method,
         cut_point_type=cut_point_type,
+        transform=transform,
     )
