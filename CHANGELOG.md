@@ -75,6 +75,8 @@ deprecation shim where practical).
   96-well defaults.
 - Batch helpers for partial-failure processing and multi-plate collapsed
   replicate aggregation.
+- Project plan updated to mark v0.6.0 complete and route the next phase to
+  PDF/DOCX report renderers.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

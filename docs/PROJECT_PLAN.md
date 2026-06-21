@@ -124,8 +124,7 @@ Remaining gaps vs. the agent loop's **Public API Targets**:
   `determine_lloq_uloq`, `read_plate`, `test_parallelism`,
   `relative_potency`, `screen_cut_point`, `confirm_cut_point`, and
   `report_run`.
-- Remaining later-phase APIs include 384-well/batch helpers and PDF/DOCX report
-  renderers.
+- Remaining later-phase APIs include PDF/DOCX report renderers.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
@@ -548,7 +547,7 @@ never `--no-verify`, never force-push.
 - **Risks:** distributional assumptions; offer parametric + non-parametric and
   document selection criteria.
 
-### v0.6.0 — 384-Well And Batch Processing (IN PROGRESS)
+### v0.6.0 — 384-Well And Batch Processing (COMPLETE)
 
 - **Goal:** scale to 384-well plates and multi-plate/run batches.
 - **Modules/API:** extend `plate` to 384 (`A1..P24`); `batch.run_batch`,
@@ -720,10 +719,10 @@ disclaimer; validation suite documents agreement with references.
 
 ## 15. Immediate Next Actions (when implementation resumes)
 
-1. Start v0.6.0 384-well and batch-processing work on a new phase branch.
-2. Extend plate support beyond 96 wells without breaking existing 96-well
-   behavior.
-3. Add multi-plate aggregation and partial-failure reporting.
+1. Start v0.7.0 PDF/DOCX report work on a new phase branch.
+2. Add optional report renderers behind `[reports]` while keeping core imports
+   functional without report extras.
+3. Add smoke tests for generated report artifacts and missing-dependency paths.
 4. Keep the universal gate green before each commit and push.
 
 > This plan is a living document. Update it at the start and end of each phase so

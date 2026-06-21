@@ -28,6 +28,10 @@ Covered in the current test suite:
   when finite EC50 variances are available.
 - Parallel-line potency is checked from slope equivalence and intercept
   displacement.
+- 384-well plate addressing, tidy/matrix ingestion, and CLI parsing are covered
+  while preserving 96-well defaults.
+- Batch helpers collect partial failures and aggregate replicate-collapsed
+  results across multiple plates.
 - HTML and Markdown reports contain the required openassay disclaimer.
 - Bundled CSV examples run through the CLI and generate reports.
 - A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,
@@ -82,9 +86,9 @@ python -m mypy src/openassay
 python -m build
 ```
 
-Latest local evidence after the v0.5 ADA cut-point workflow was completed:
+Latest local evidence after the v0.6 384-well and batch workflow was completed:
 
-- `python -m pytest`: 97 passed.
+- `python -m pytest`: 109 passed.
 - `python -m ruff check src tests`: passed.
 - `python -m ruff format --check src tests`: passed.
 - `python -m mypy src/openassay`: passed.
@@ -122,6 +126,4 @@ software versions, and provenance. Do not copy third-party package source.
 - The current examples are smoke tests, not regulatory validation datasets.
 - Acceptance computes per-level bias and CV only when nominal concentrations are
   present on result-like objects.
-- Plate layout, replicate collapse, blank subtraction, and batch validation are
-  planned for later phases.
 - PDF/DOCX report validation is planned for the reports phase.
