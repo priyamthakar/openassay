@@ -28,6 +28,8 @@ deprecation shim where practical).
 - GitHub Actions CI for pytest, Ruff, mypy, and package build checks across
   Python 3.10-3.12 on Windows, macOS, and Linux.
 - Synthetic FDA/ICH M10-style calibration/QC validation fixture.
+- Initial 96-well tidy CSV plate reader with duplicate-well and non-finite
+  response validation.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

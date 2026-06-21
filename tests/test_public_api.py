@@ -11,5 +11,6 @@ def test_public_functional_api_exports() -> None:
     assert callable(oa.back_calculate)
     assert callable(oa.back_calculate_many)
     assert callable(oa.determine_lloq_uloq)
+    assert callable(oa.read_plate)
     assert callable(oa.run_acceptance)
     assert callable(oa.report_run)
