@@ -141,3 +141,33 @@ def test_back_calculate_many_uses_shared_curve_result():
     assert [result.sample_name for result in results] == ["s1", "s2"]
     assert results[0].diluted_concentration == pytest.approx(20.0)
     assert results[1].diluted_concentration == pytest.approx(200.0)
+
+
+@pytest.mark.parametrize(
+    ("sample_dilution", "minimum_required_dilution", "expected"),
+    [
+        (1.0, 1.0, 10.0),
+        (10.0, 1.0, 100.0),
+        (100.0, 1.0, 1000.0),
+        (10.0, 10.0, 1000.0),
+    ],
+)
+def test_back_calculate_dilution_linearity_10x_100x(
+    sample_dilution: float,
+    minimum_required_dilution: float,
+    expected: float,
+) -> None:
+    """10x/100x dilution checks should scale reported concentration linearly."""
+    fit_result = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+
+    result = back_calculate(
+        Sample(name="linearity", response=50.0, dilution_factor=sample_dilution),
+        fit_result,
+        minimum_required_dilution=minimum_required_dilution,
+    )
+
+    assert result.predicted_concentration == pytest.approx(10.0)
+    assert result.diluted_concentration == pytest.approx(expected)

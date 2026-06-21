@@ -40,6 +40,7 @@ deprecation shim where practical).
   inverse prediction alongside sample dilution.
 - Reportable range helper can evaluate raw bias/CV level stats with relaxed
   LLOQ/ULOQ extreme tolerances.
+- Explicit 10x/100x dilution-linearity regression tests.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
