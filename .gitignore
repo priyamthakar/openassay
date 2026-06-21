@@ -6,3 +6,7 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Local nested openfit checkout (its own repo; never vendor it into openassay)
+openfit/
+.venv/

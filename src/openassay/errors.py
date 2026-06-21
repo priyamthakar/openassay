@@ -12,7 +12,7 @@ while chaining the original via ``raise ... from exc``.
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 
 
 class OpenassayError(Exception):
@@ -51,7 +51,7 @@ class ReportError(OpenassayError):
     """Report generation failed, typically a missing optional dependency."""
 
 
-def require_finite(values: ArrayLike, name: str) -> np.ndarray:
+def require_finite(values: ArrayLike, name: str) -> NDArray[np.float64]:
     """Return ``values`` as a float array, raising if any element is NaN/Inf.
 
     Parameters
