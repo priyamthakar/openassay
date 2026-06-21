@@ -7,7 +7,14 @@ from typing import Any
 
 import pandas as pd
 
-from openassay.plate import PlateData, PlateLayout, Well, make_plate_well
+from openassay.plate import (
+    PlateData,
+    PlateLayout,
+    PlateSize,
+    Well,
+    make_plate_well,
+    normalize_plate_size,
+)
 
 
 def _read_table(path: str | Path, *, index_col: int | None = None) -> pd.DataFrame:
@@ -33,7 +40,12 @@ def _optional_string(value: Any) -> str | None:
     return text if text else None
 
 
-def _read_tidy_plate(path: str | Path, expected_wells: list[str] | None = None) -> PlateData:
+def _read_tidy_plate(
+    path: str | Path,
+    *,
+    expected_wells: list[str] | None = None,
+    plate_size: PlateSize = "96",
+) -> PlateData:
     df = _read_table(path)
     required = {"well", "role", "response"}
     missing = required.difference(df.columns)
@@ -48,10 +60,11 @@ def _read_tidy_plate(path: str | Path, expected_wells: list[str] | None = None) 
             sample_name=_optional_string(getattr(row, "sample", None)),
             nominal_concentration=_optional_float(getattr(row, "concentration", None)),
             replicate_group=_optional_string(getattr(row, "replicate_group", None)),
+            plate_size=plate_size,
         )
         for row in df.itertuples(index=False)
     ]
-    layout = PlateLayout(wells)
+    layout = PlateLayout(wells, plate_size=plate_size)
     if expected_wells is not None:
         layout.require_wells(expected_wells)
     return PlateData(layout=layout)
@@ -62,6 +75,7 @@ def _read_matrix_plate(
     *,
     layout: str | Path,
     expected_wells: list[str] | None = None,
+    plate_size: PlateSize = "96",
 ) -> PlateData:
     matrix = _read_table(path, index_col=0)
     layout_df = _read_table(layout)
@@ -73,7 +87,7 @@ def _read_matrix_plate(
     responses: dict[str, float] = {}
     for row_label, row in matrix.iterrows():
         for column_label, value in row.items():
-            well = str(Well.parse(f"{row_label}{column_label}"))
+            well = str(Well.parse(f"{row_label}{column_label}", plate_size=plate_size))
             responses[well] = float(value)
 
     wells = []
@@ -89,10 +103,11 @@ def _read_matrix_plate(
                 sample_name=_optional_string(getattr(row, "sample", None)),
                 nominal_concentration=_optional_float(getattr(row, "concentration", None)),
                 replicate_group=_optional_string(getattr(row, "replicate_group", None)),
+                plate_size=plate_size,
             )
         )
 
-    plate_layout = PlateLayout(wells)
+    plate_layout = PlateLayout(wells, plate_size=plate_size)
     if expected_wells is not None:
         plate_layout.require_wells(expected_wells)
     return PlateData(layout=plate_layout)
@@ -104,11 +119,17 @@ def read_plate(
     format: str = "tidy",
     layout: str | Path | None = None,
     expected_wells: list[str] | None = None,
+    plate_size: str = "96",
 ) -> PlateData:
     """Read plate CSV data."""
+    normalized_plate_size = normalize_plate_size(plate_size)
     normalized_format = format.lower()
     if normalized_format == "tidy":
-        return _read_tidy_plate(path, expected_wells=expected_wells)
+        return _read_tidy_plate(
+            path,
+            expected_wells=expected_wells,
+            plate_size=normalized_plate_size,
+        )
     if normalized_format == "matrix":
         if layout is None:
             raise ValueError("Matrix plate format requires a layout CSV path.")
@@ -116,5 +137,6 @@ def read_plate(
             path,
             layout=layout,
             expected_wells=expected_wells,
+            plate_size=normalized_plate_size,
         )
     raise ValueError("format must be 'tidy' or 'matrix'.")

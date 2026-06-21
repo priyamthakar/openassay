@@ -71,6 +71,8 @@ deprecation shim where practical).
   nonparametric, and floating-multiplier outputs.
 - Project plan updated to mark v0.5.0 complete and route the next phase to
   384-well and batch-processing work.
+- Explicit 384-well plate parsing for tidy and matrix inputs while preserving
+  96-well defaults.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

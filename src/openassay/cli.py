@@ -181,15 +181,17 @@ if typer is not None:
         data: Path = typer.Argument(..., help="Path to plate data CSV"),
         format: str = typer.Option("tidy", help="Input format: tidy or matrix"),
         layout: Path | None = typer.Option(None, help="Layout CSV for matrix input"),
+        plate_size: str = typer.Option("96", help="Plate size: 96 or 384"),
         subtract_blank: bool = typer.Option(True, help="Subtract mean blank before collapse"),
     ) -> None:
         """Parse plate data and print a compact summary."""
-        plate = read_plate(data, format=format, layout=layout)
+        plate = read_plate(data, format=format, layout=layout, plate_size=plate_size)
         collapsed = plate.collapse_replicates(subtract_blank=subtract_blank)
         roles: tuple[Role, ...] = ("standard", "anchor", "qc", "unknown", "blank")
         role_counts = {role: len(plate.layout.by_role(role)) for role in roles}
         blank = plate.blank_response()
 
+        print(f"Plate size: {plate.layout.plate_size}")
         print(f"Wells: {len(plate.wells)}")
         print(
             "Roles: " + ", ".join(f"{role}={count}" for role, count in role_counts.items() if count)

@@ -548,7 +548,7 @@ never `--no-verify`, never force-push.
 - **Risks:** distributional assumptions; offer parametric + non-parametric and
   document selection criteria.
 
-### v0.6.0 — 384-Well And Batch Processing
+### v0.6.0 — 384-Well And Batch Processing (IN PROGRESS)
 
 - **Goal:** scale to 384-well plates and multi-plate/run batches.
 - **Modules/API:** extend `plate` to 384 (`A1..P24`); `batch.run_batch`,

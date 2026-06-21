@@ -15,11 +15,26 @@ def test_well_parsing_accepts_valid_96_well_addresses() -> None:
     assert str(Well.parse("H12")) == "H12"
 
 
+def test_well_parsing_accepts_valid_384_well_addresses_when_explicit() -> None:
+    """384-well parsing should be explicit and preserve 96-well defaults."""
+    well = Well.parse("p24", plate_size="384")
+
+    assert str(well) == "P24"
+    assert well.plate_size == "384"
+
+
 @pytest.mark.parametrize("address", ["I1", "A13", "A0", "AA1", "1A"])
 def test_well_parsing_rejects_invalid_96_well_addresses(address: str) -> None:
     """Invalid 96-well addresses should fail fast."""
     with pytest.raises(PlateLayoutError):
         Well.parse(address)
+
+
+@pytest.mark.parametrize("address", ["Q1", "A25", "A0", "AA1", "1A"])
+def test_well_parsing_rejects_invalid_384_well_addresses(address: str) -> None:
+    """Invalid 384-well addresses should fail fast."""
+    with pytest.raises(PlateLayoutError):
+        Well.parse(address, plate_size="384")
 
 
 def test_plate_layout_rejects_duplicate_wells() -> None:
@@ -68,6 +83,26 @@ def test_read_plate_tidy_csv(tmp_path) -> None:
     assert [str(well.well) for well in plate.wells] == ["A1", "A2", "A3"]
     assert len(plate.layout.by_role("standard")) == 1
     assert plate.wells[2].nominal_concentration is None
+
+
+def test_read_plate_tidy_csv_384_well(tmp_path) -> None:
+    """Tidy CSV plate input should accept 384-well addresses when requested."""
+    path = tmp_path / "plate384.csv"
+    path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,response,replicate_group",
+                "A1,standard,std-1,12.5,std-1",
+                "P24,unknown,sample-1,45.0,sample-1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    plate = read_plate(path, plate_size="384")
+
+    assert plate.layout.plate_size == "384"
+    assert [str(well.well) for well in plate.wells] == ["A1", "P24"]
 
 
 def test_read_plate_tidy_excel(tmp_path) -> None:
@@ -127,6 +162,38 @@ def test_read_plate_matrix_csv_with_layout_map(tmp_path) -> None:
 
     assert [str(well.well) for well in plate.wells] == ["A1", "A2", "B1"]
     assert [well.response for well in plate.wells] == [10.0, 11.0, 20.0]
+
+
+def test_read_plate_matrix_csv_384_well_with_layout_map(tmp_path) -> None:
+    """Matrix 384-well input should accept rows through P and columns through 24."""
+    matrix_path = tmp_path / "matrix384.csv"
+    layout_path = tmp_path / "layout384.csv"
+    matrix_path.write_text(
+        "\n".join(
+            [
+                ",1,24",
+                "A,10.0,11.0",
+                "P,20.0,21.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    layout_path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,replicate_group",
+                "A1,standard,std-1,std-1",
+                "P24,unknown,sample-1,sample-1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    plate = read_plate(matrix_path, format="matrix", layout=layout_path, plate_size="384")
+
+    assert plate.layout.plate_size == "384"
+    assert [str(well.well) for well in plate.wells] == ["A1", "P24"]
+    assert [well.response for well in plate.wells] == [10.0, 21.0]
 
 
 def test_read_plate_matrix_excel_with_excel_layout_map(tmp_path) -> None:

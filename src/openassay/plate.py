@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 
@@ -12,25 +13,47 @@ from openassay.types import ROLES, Role
 
 _ROW_LABELS_96 = tuple("ABCDEFGH")
 _MAX_COL_96 = 12
+_ROW_LABELS_384 = tuple("ABCDEFGHIJKLMNOP")
+_MAX_COL_384 = 24
+PlateSize = Literal["96", "384"]
+
+
+def normalize_plate_size(value: str) -> PlateSize:
+    """Validate and normalize a plate-size identifier."""
+    if value == "96":
+        return "96"
+    if value == "384":
+        return "384"
+    raise PlateLayoutError("plate_size must be '96' or '384'.")
+
+
+def _plate_bounds(plate_size: PlateSize) -> tuple[tuple[str, ...], int]:
+    if plate_size == "96":
+        return _ROW_LABELS_96, _MAX_COL_96
+    if plate_size == "384":
+        return _ROW_LABELS_384, _MAX_COL_384
+    raise PlateLayoutError("plate_size must be '96' or '384'.")
 
 
 @dataclass(frozen=True, order=True)
 class Well:
-    """A 96-well plate address such as A1 or H12."""
+    """A plate well address such as A1, H12, or P24."""
 
     row: str
     column: int
+    plate_size: PlateSize = "96"
 
     def __post_init__(self) -> None:
         row = self.row.upper()
-        if row not in _ROW_LABELS_96:
-            raise PlateLayoutError(f"Invalid 96-well row {self.row!r}.")
-        if not 1 <= self.column <= _MAX_COL_96:
-            raise PlateLayoutError(f"Invalid 96-well column {self.column!r}.")
+        rows, max_col = _plate_bounds(self.plate_size)
+        if row not in rows:
+            raise PlateLayoutError(f"Invalid {self.plate_size}-well row {self.row!r}.")
+        if not 1 <= self.column <= max_col:
+            raise PlateLayoutError(f"Invalid {self.plate_size}-well column {self.column!r}.")
         object.__setattr__(self, "row", row)
 
     @classmethod
-    def parse(cls, value: str) -> Well:
+    def parse(cls, value: str, *, plate_size: PlateSize = "96") -> Well:
         """Parse a well address like A1."""
         text = value.strip().upper()
         if len(text) < 2:
@@ -39,7 +62,7 @@ class Well:
         column_text = text[1:]
         if not column_text.isdigit():
             raise PlateLayoutError(f"Invalid well address {value!r}.")
-        return cls(row=row, column=int(column_text))
+        return cls(row=row, column=int(column_text), plate_size=plate_size)
 
     def __str__(self) -> str:
         return f"{self.row}{self.column}"
@@ -62,10 +85,16 @@ class PlateLayout:
     """Collection of unique wells for a plate run."""
 
     wells: list[PlateWell]
+    plate_size: PlateSize = "96"
 
     def __post_init__(self) -> None:
+        _plate_bounds(self.plate_size)
         seen: set[Well] = set()
         for plate_well in self.wells:
+            if plate_well.well.plate_size != self.plate_size:
+                raise PlateLayoutError(
+                    f"Well {plate_well.well} does not match {self.plate_size}-well layout."
+                )
             if plate_well.well in seen:
                 raise PlateLayoutError(f"Duplicate well {plate_well.well}.")
             seen.add(plate_well.well)
@@ -77,7 +106,7 @@ class PlateLayout:
     def missing_wells(self, expected_wells: list[str]) -> list[Well]:
         """Return expected wells that are absent from the layout."""
         observed = {plate_well.well for plate_well in self.wells}
-        expected = [Well.parse(well) for well in expected_wells]
+        expected = [Well.parse(well, plate_size=self.plate_size) for well in expected_wells]
         return [well for well in expected if well not in observed]
 
     def require_wells(self, expected_wells: list[str]) -> None:
@@ -161,6 +190,7 @@ def make_plate_well(
     sample_name: str | None = None,
     nominal_concentration: float | None = None,
     replicate_group: str | None = None,
+    plate_size: PlateSize = "96",
 ) -> PlateWell:
     """Validate and construct one plate well."""
     normalized_role = role.strip().lower()
@@ -172,7 +202,7 @@ def make_plate_well(
         raise ValueError(f"Well {well} concentration contains NaN or Inf values.")
 
     return PlateWell(
-        well=Well.parse(well),
+        well=Well.parse(well, plate_size=plate_size),
         role=normalized_role,
         response=float(response),
         sample_name=sample_name,

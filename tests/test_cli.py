@@ -93,6 +93,29 @@ def test_cli_plate_parse_summarizes_tidy_plate(tmp_path) -> None:
     assert "qc:qc-low" in result.output
 
 
+def test_cli_plate_parse_accepts_384_well_plate(tmp_path) -> None:
+    """The plate parser CLI should expose explicit 384-well parsing."""
+    assert app is not None
+
+    plate_path = tmp_path / "plate384.csv"
+    plate_path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,response,replicate_group",
+                "A1,blank,blank,2.0,blank",
+                "P24,unknown,sample-1,22.0,sample-1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["plate", "parse", str(plate_path), "--plate-size", "384"])
+
+    assert result.exit_code == 0
+    assert "Plate size: 384" in result.output
+    assert "Wells: 2" in result.output
+
+
 def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
     """The parallelism command should expose the potency gate."""
     assert app is not None
