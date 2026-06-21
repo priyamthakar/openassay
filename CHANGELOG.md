@@ -59,6 +59,8 @@ deprecation shim where practical).
   cut-point workflows.
 - Initial ADA screening and confirmatory cut-point API with parametric and
   nonparametric methods, plus refusal on insufficient biological variability.
+- Explicit ADA outlier handling via opt-in Tukey exclusion with excluded row
+  indices recorded in `ADAResult`.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

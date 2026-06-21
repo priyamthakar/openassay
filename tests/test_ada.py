@@ -35,6 +35,7 @@ def test_screen_cut_point_parametric_uses_false_positive_rate() -> None:
     assert result.fp_rate == 0.05
     assert result.n_samples == 2
     assert result.n_runs == 2
+    assert result.excluded_indices == []
 
 
 def test_screen_cut_point_nonparametric_percentile() -> None:
@@ -52,6 +53,36 @@ def test_confirm_cut_point_uses_confirmatory_default_fp_rate() -> None:
     assert result.evaluable is True
     assert result.fp_rate == 0.01
     assert result.cut_point == pytest.approx(23.006604)
+
+
+def test_screen_cut_point_tukey_outlier_method_excludes_documented_rows() -> None:
+    """Tukey outlier handling should be explicit and reproducible."""
+    data = [
+        {"sample_id": "d1", "run_id": "r1", "response": 100.0},
+        {"sample_id": "d2", "run_id": "r1", "response": 101.0},
+        {"sample_id": "d3", "run_id": "r1", "response": 102.0},
+        {"sample_id": "d1", "run_id": "r2", "response": 100.0},
+        {"sample_id": "d2", "run_id": "r2", "response": 101.0},
+        {"sample_id": "d3", "run_id": "r2", "response": 150.0},
+    ]
+
+    result = screen_cut_point(data, outlier_method="tukey")
+
+    assert result.evaluable is True
+    assert result.excluded_indices == [5]
+    assert result.cut_point == pytest.approx(102.176183)
+    assert "Excluded 1 observation" in " ".join(result.reasons)
+
+
+def test_screen_cut_point_default_keeps_outlying_values() -> None:
+    """Outlier handling is opt-in, never silent."""
+    data = negative_controls() + [{"sample_id": "d3", "run_id": "r2", "response": 150.0}]
+
+    result = screen_cut_point(data)
+
+    assert result.excluded_indices == []
+    assert result.cut_point is not None
+    assert result.cut_point > 120.0
 
 
 def test_ada_cut_point_refuses_single_run() -> None:

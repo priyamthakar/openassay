@@ -536,8 +536,8 @@ never `--no-verify`, never force-push.
     variance.
   - **Confirmatory cut point:** percent inhibition in the competition assay,
     typically at 1% FPR (99th percentile or `mean + 2.33·SD`).
-  - **Outlier handling:** documented, reproducible (e.g., boxplot/Tukey or
-    3·SD), applied before cut-point estimation, recorded in provenance.
+  - **Outlier handling:** documented, reproducible (Tukey option implemented),
+    applied before cut-point estimation, recorded in `ADAResult`.
   - **Invariant 8:** require biological variability across samples/runs;
     a single run with no replication refuses to emit a cut point
     (`AcceptanceError`/`not_evaluable`), never falls back to a single-run SD.
