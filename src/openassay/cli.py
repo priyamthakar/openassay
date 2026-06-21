@@ -22,10 +22,29 @@ else:
     app = None
 
 
-def _check_cli() -> None:
+def _missing_cli() -> None:
     if typer is None:
         print("CLI dependencies not installed. Run: pip install 'openassay[cli]'", file=sys.stderr)
         sys.exit(1)
+
+
+def _normalize_model(model: str) -> str:
+    aliases = {
+        "4pl": "hill4p",
+        "5pl": "hill5p",
+    }
+    model_id = aliases.get(model.lower(), model.lower())
+    if model_id not in {"hill4p", "hill5p"}:
+        raise ValueError("model must be one of: 4pl, 5pl, hill4p, hill5p")
+    return model_id
+
+
+def main() -> None:
+    """Console-script entry point."""
+    if app is None:
+        _missing_cli()
+        return
+    app()
 
 
 if typer is not None:
@@ -33,25 +52,23 @@ if typer is not None:
     @app.command()
     def version() -> None:
         """Print openassay version."""
-        _check_cli()
         print(f"openassay version {__version__}")
 
     @app.command()
     def fit_curve(
         data: Path = typer.Argument(..., help="Path to CSV data file"),
-        model: str = typer.Option("hill4p", help="Model ID (hill4p or hill5p)"),
+        model: str = typer.Option("4pl", help="Model ID (4pl, 5pl, hill4p, or hill5p)"),
         weights: str = typer.Option("1/y2", help="Weight scheme"),
         report: Path = typer.Option("report.html", help="Output report path"),
     ) -> None:
         """Fit a standard curve and generate a report."""
-        _check_cli()
         import pandas as pd
 
         df = pd.read_csv(data)
         x = df["concentration"].values
         y = df["response"].values
 
-        curve = StandardCurve(x, y, model=model, weights=weights)
+        curve = StandardCurve(x, y, model=_normalize_model(model), weights=weights)
         result = curve.fit()
 
         from openassay.acceptance import AcceptanceResult
@@ -68,11 +85,15 @@ if typer is not None:
     @app.command()
     def backcalc(
         data: Path = typer.Argument(..., help="Path to CSV data file"),
-        curve_data: Path = typer.Option(..., help="Path to standard curve CSV"),
+        curve_data: Path = typer.Option(
+            ...,
+            "--curve",
+            "--curve-data",
+            help="Path to standard curve CSV",
+        ),
         report: Path = typer.Option("results.html", help="Output report path"),
     ) -> None:
         """Back-calculate sample concentrations."""
-        _check_cli()
         import pandas as pd
 
         df_curve = pd.read_csv(curve_data)
@@ -102,5 +123,4 @@ if typer is not None:
 
 
 if __name__ == "__main__":
-    if app is not None:
-        app()
+    main()
