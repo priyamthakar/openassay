@@ -69,7 +69,7 @@ exclude = ["openfit/", "\\.venv/"]
 
 [[tool.mypy.overrides]]
 # These libraries ship no type stubs in this environment.
-module = ["scipy", "scipy.*", "pandas"]
+module = ["pandas"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

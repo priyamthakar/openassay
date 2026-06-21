@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from openassay.backcalc import Sample, back_calculate
@@ -22,6 +24,20 @@ def test_back_calculate_applies_dilution():
     # Predicted should be around 5 (since y=50 is between 20 and 80, x between 1 and 10)
     # Diluted should be predicted * 10
     assert bc_result.diluted_concentration == bc_result.predicted_concentration * 10.0
+
+
+def test_back_calculate_uses_public_fit_result_fields_only():
+    """Back-calculation should not require private openfit model attributes."""
+    fit_result = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+    sample = Sample(name="public", response=50.0, dilution_factor=2.0)
+
+    result = back_calculate(sample, fit_result)
+
+    assert result.predicted_concentration == pytest.approx(10.0)
+    assert result.diluted_concentration == pytest.approx(20.0)
 
 
 def test_back_calculate_rejects_nan_response():
