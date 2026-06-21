@@ -25,6 +25,8 @@ deprecation shim where practical).
   `report_run`.
 - `determine_lloq_uloq` and `RangeResult` for reportable-range decisions from
   accuracy/precision level summaries.
+- GitHub Actions CI for pytest, Ruff, mypy, and package build checks across
+  Python 3.10-3.12 on Windows, macOS, and Linux.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

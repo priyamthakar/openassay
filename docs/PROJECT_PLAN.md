@@ -124,8 +124,8 @@ Gaps vs. the agent loop's **Public API Targets** that this plan will close:
   `relative_potency`, `screen_cut_point`, `confirm_cut_point`) is not yet
   present. Current wrappers include `fit_standard_curve`,
   `back_calculate_many`, `determine_lloq_uloq`, and `report_run`.
-- No pydantic models, no `pandas` ingestion layer, no plate model, no
-  CI — all required by the loop.
+- No pydantic models, no `pandas` ingestion layer, and no plate model — all
+  required by the loop.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
