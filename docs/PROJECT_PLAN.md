@@ -497,7 +497,7 @@ never `--no-verify`, never force-push.
 - **Risks:** off-by-one in "contiguous passing span"; cover with table-driven
   tests over hand-computed level sets.
 
-### v0.4.0 — Parallelism And Relative Potency
+### v0.4.0 — Parallelism And Relative Potency (IN PROGRESS)
 
 - **Goal:** compare a test preparation to a reference and report potency only
   when justified.

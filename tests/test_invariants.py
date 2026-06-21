@@ -9,6 +9,7 @@ import pytest
 from openassay.acceptance import AcceptanceResult, run_acceptance
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
+from openassay.potency import relative_potency
 from openassay.report import DISCLAIMER, generate_html_report, generate_markdown_report
 
 
@@ -139,6 +140,23 @@ def test_anchor_results_are_excluded_from_acceptance_decisions() -> None:
     assert acceptance.passed is True
     assert len(acceptance.level_stats) == 1
     assert acceptance.level_stats[0].nominal_concentration == 100.0
+
+
+def test_relative_potency_requires_parallelism() -> None:
+    """Invariant 7: potency is not reportable if parallelism fails."""
+    reference = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 1.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+    test = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 1.0, "Top": 100.0, "EC50": 5.0, "HillSlope": 1.8},
+    )
+
+    potency = relative_potency(reference, test)
+
+    assert potency.reportable is False
+    assert potency.point_estimate is None
 
 
 def test_reports_include_required_disclaimer(tmp_path) -> None:

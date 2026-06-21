@@ -43,6 +43,8 @@ deprecation shim where practical).
 - Explicit 10x/100x dilution-linearity regression tests.
 - Roadmap/project-plan status updated for completed v0.3.0 work and v0.4.0
   as the next active phase.
+- Initial equivalence-based `test_parallelism` and EC50-ratio
+  `relative_potency`, with potency suppressed when parallelism fails.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
