@@ -24,9 +24,11 @@ deprecation shim where practical).
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.
+- `docs/validation.md`: initial validation evidence ledger and verification
+  commands.
 
 ### Planned (v0.1.1 hardening, see PROJECT_PLAN.md §9)
-- `docs/validation.md`.
+- External R/reference-output validation fixtures.
 
 ## [0.1.0] - 2026-06-03
 

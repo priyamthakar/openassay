@@ -720,7 +720,8 @@ disclaimer; validation suite documents agreement with references.
 1. Make openfit available (install pinned real openfit, or wire the
    contract-faithful fake + `conftest.py` switch) so the v0.1.0 gate can run.
 2. Add `.gitattributes` (LF) and normalize line endings to kill the CRLF churn.
-3. Add `docs/validation.md`; tag the hardened result `v0.1.1`.
+3. Add external reference-output validation fixtures; tag the hardened result
+   `v0.1.1`.
 4. Then proceed to v0.2.0 (plate layouts) on `agent/openassay-v020`.
 
 > This plan is a living document. Update it at the start and end of each phase so
