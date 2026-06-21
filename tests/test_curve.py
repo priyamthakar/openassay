@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from openassay.curve import CalibrationResult, StandardCurve
+from openassay.curve import CalibrationResult, StandardCurve, fit_standard_curve
 
 
 def test_standard_curve_defaults_to_1y2():
@@ -55,3 +55,17 @@ def test_standard_curve_fit_returns_calibration_result():
     assert isinstance(result, CalibrationResult)
     assert result.fit_result is not None
     assert result.fit_result.model_id == "hill4p"
+
+
+def test_fit_standard_curve_functional_api_sets_reportable_range():
+    """Functional API should fit and preserve optional reportable range metadata."""
+    result = fit_standard_curve(
+        [0.1, 0.3, 1.0, 10.0, 100.0],
+        [2.0, 5.0, 20.0, 80.0, 98.0],
+        lloq=0.3,
+        uloq=100.0,
+    )
+
+    assert isinstance(result, CalibrationResult)
+    assert result.fit_result.model_id == "hill4p"
+    assert result.reportable_range == (0.3, 100.0)

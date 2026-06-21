@@ -1,0 +1,18 @@
+{
+  "provenance": "Hand-computed ADA validation fixture using sample SD for parametric cut points and linear percentile interpolation for nonparametric cut points.",
+  "references": [
+    "Shankar et al. 2008 concepts for immunogenicity cut-point evaluation",
+    "FDA Immunogenicity Testing of Therapeutic Protein Products 2019 concepts",
+    "EMA Immunogenicity Assessment Guideline concepts"
+  ],
+  "screening": {
+    "fp_rate": 0.05,
+    "parametric_cut_point": 105.39722570126516,
+    "nonparametric_cut_point": 103.85,
+    "floating_multiplier": 1.035603399679025
+  },
+  "confirmatory": {
+    "fp_rate": 0.01,
+    "parametric_cut_point": 23.006604382430137
+  }
+}

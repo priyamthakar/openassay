@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import numpy as np
@@ -28,6 +29,67 @@ class BackCalcResult:
     above_uloq: bool
     lloq: float | None = None
     uloq: float | None = None
+    dilution_factor: float = 1.0
+    minimum_required_dilution: float = 1.0
+
+
+def _inverse_hill_response(response: float, fit_result: FitResult) -> float:
+    """Return concentration from public openfit result parameters."""
+    params = fit_result.params
+    model_id = fit_result.model_id
+
+    try:
+        bottom = float(params["Bottom"])
+        top = float(params["Top"])
+        ec50 = float(params["EC50"])
+        slope = float(params["HillSlope"])
+    except KeyError as exc:
+        raise ValueError(f"FitResult for model {model_id!r} is missing parameter {exc}.") from exc
+
+    if model_id == "hill4p":
+        asymmetry = 1.0
+    elif model_id == "hill5p":
+        try:
+            asymmetry = float(params["Asymmetry"])
+        except KeyError as exc:
+            raise ValueError(
+                "FitResult for model 'hill5p' is missing parameter 'Asymmetry'."
+            ) from exc
+    else:
+        raise ValueError(
+            f"Back-calculation supports openfit hill4p and hill5p results, got {model_id!r}."
+        )
+
+    values = np.asarray([bottom, top, ec50, slope, asymmetry, response], dtype=np.float64)
+    if not np.isfinite(values).all():
+        raise ValueError("FitResult parameters and sample response must be finite.")
+    if ec50 <= 0.0:
+        raise ValueError("FitResult EC50 must be positive for inverse prediction.")
+    if slope == 0.0:
+        raise ValueError("FitResult HillSlope must be non-zero for inverse prediction.")
+    if asymmetry <= 0.0:
+        raise ValueError("FitResult Asymmetry must be positive for 5PL inverse prediction.")
+
+    span = top - bottom
+    if span == 0.0:
+        raise ValueError("FitResult Top and Bottom must differ for inverse prediction.")
+
+    fraction = (response - bottom) / span
+    if not 0.0 < fraction < 1.0:
+        raise ValueError("response is outside the fitted curve range.")
+
+    if model_id == "hill5p":
+        ratio = (1.0 / fraction) ** (1.0 / asymmetry) - 1.0
+    else:
+        ratio = (1.0 / fraction) - 1.0
+
+    if ratio <= 0.0 or not np.isfinite(ratio):
+        raise ValueError("response is outside the fitted curve range.")
+
+    predicted = ec50 / (ratio ** (1.0 / slope))
+    if not np.isfinite(predicted) or predicted <= 0.0:
+        raise ValueError("Inverse prediction produced a non-finite concentration.")
+    return float(predicted)
 
 
 def back_calculate(
@@ -35,6 +97,7 @@ def back_calculate(
     fit_result: FitResult,
     lloq: float | None = None,
     uloq: float | None = None,
+    minimum_required_dilution: float = 1.0,
 ) -> BackCalcResult:
     """Back-calculate sample concentration from observed response.
 
@@ -61,40 +124,23 @@ def back_calculate(
     """
     if not np.isfinite(sample.response):
         raise ValueError(f"Sample response must be finite, got {sample.response}")
-
-    model = fit_result._model
-    params = fit_result.params
-
-    # Inverse prediction: find x such that model(x, **params) == response
-    # Use scipy.optimize.root_scalar for robust 1D root finding
-    import scipy.optimize
-
-    def objective(x: float) -> float:
-        # Ensure x is positive for typical assay models
-        if x <= 0:
-            return np.inf
-        return float(model.equation(np.array([x]), **params)[0] - sample.response)
-
-    # Bracket the root: start from a reasonable range based on fit x values
-    x_min = float(np.min(fit_result.x)) * 0.1
-    x_max = float(np.max(fit_result.x)) * 10.0
+    if not np.isfinite(sample.dilution_factor) or sample.dilution_factor <= 0.0:
+        raise ValueError(
+            f"Sample dilution factor must be positive and finite, got {sample.dilution_factor}"
+        )
+    if not np.isfinite(minimum_required_dilution) or minimum_required_dilution <= 0.0:
+        raise ValueError(
+            "minimum_required_dilution must be positive and finite, "
+            f"got {minimum_required_dilution}"
+        )
 
     try:
-        res = scipy.optimize.root_scalar(objective, bracket=[x_min, x_max], method="brentq")
+        predicted = _inverse_hill_response(sample.response, fit_result)
     except ValueError as exc:
-        raise ValueError(
-            f"Sample {sample.name!r} response is outside the fitted curve range."
-        ) from exc
+        raise ValueError(f"Inverse prediction failed for sample {sample.name!r}: {exc}") from exc
 
-    if not res.converged:
-        raise ValueError(f"Inverse prediction did not converge for sample {sample.name!r}.")
-
-    predicted = float(res.root)
-    if not np.isfinite(predicted):
-        raise ValueError(f"Inverse prediction produced a non-finite value for {sample.name!r}.")
-
-    # Apply dilution factor AFTER inverse prediction
-    diluted = predicted * sample.dilution_factor
+    # Apply all dilution factors AFTER inverse prediction.
+    diluted = predicted * minimum_required_dilution * sample.dilution_factor
     if not np.isfinite(diluted):
         raise ValueError(f"Diluted concentration is non-finite for sample {sample.name!r}.")
 
@@ -109,4 +155,26 @@ def back_calculate(
         above_uloq=above_uloq,
         lloq=lloq,
         uloq=uloq,
+        dilution_factor=sample.dilution_factor,
+        minimum_required_dilution=minimum_required_dilution,
     )
+
+
+def back_calculate_many(
+    samples: Iterable[Sample],
+    fit_result: FitResult,
+    lloq: float | None = None,
+    uloq: float | None = None,
+    minimum_required_dilution: float = 1.0,
+) -> list[BackCalcResult]:
+    """Back-calculate many samples with the same fitted curve result."""
+    return [
+        back_calculate(
+            sample,
+            fit_result,
+            lloq=lloq,
+            uloq=uloq,
+            minimum_required_dilution=minimum_required_dilution,
+        )
+        for sample in samples
+    ]

@@ -1,7 +1,7 @@
 # openfit API Contract
 
-Documented on: 2026-06-03
-Source: `D:\worktrees\openfit-agent` (branch: `agent/openfit-downstream-api`)
+Documented on: 2026-06-21
+Source: local checkout at `D:\openassay\openfit`
 
 ## openfit version
 - Declared version in `pyproject.toml`: `0.1.1`
@@ -40,6 +40,10 @@ Fit(
 - 4PL: `"hill4p"`
 - 5PL: `"hill5p"`
 
+## 4PL/5PL equations
+- 4PL (`hill4p`): `y = Bottom + (Top - Bottom) / (1 + (EC50 / x)^HillSlope)`
+- 5PL (`hill5p`): `y = Bottom + (Top - Bottom) / (1 + (EC50 / x)^HillSlope)^Asymmetry`
+
 ## Parameter names/order
 - 4PL (`hill4p`): `["Bottom", "Top", "EC50", "HillSlope"]`
 - 5PL (`hill5p`): `["Bottom", "Top", "EC50", "HillSlope", "Asymmetry"]`
@@ -65,6 +69,12 @@ Fit(
 - `model_id`: `str` - Model identifier string.
 - `weight_scheme`: `str` - Weight scheme string.
 - `spec`: `FitSpec` - Full reproducibility manifest.
+
+## Inverse prediction
+- No public `inverse_predict` API is exposed in the inspected openfit checkout.
+- openassay therefore performs 4PL/5PL inverse prediction from public
+  `FitResult.model_id` and `FitResult.params`.
+- openassay must not rely on private `FitResult._model` for back-calculation.
 
 ## Covariance availability
 - **Exposed**: Yes, as of `agent/openfit-downstream-api` branch.

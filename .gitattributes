@@ -1,0 +1,19 @@
+# Normalize line endings so source files stop showing spurious CRLF/LF diffs.
+* text=auto eol=lf
+
+# Explicitly LF for source and config.
+*.py text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Treat common binaries as binary (no EOL munging).
+*.png binary
+*.jpg binary
+*.pdf binary
+*.xlsx binary
+*.docx binary

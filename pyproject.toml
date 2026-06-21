@@ -16,6 +16,7 @@ dependencies = [
     "openfit>=0.1.1",
     "numpy>=1.24.0",
     "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
     "pydantic>=2.0.0",
 ]
 
@@ -37,7 +38,7 @@ dev = [
 ]
 
 [project.scripts]
-openassay = "openassay.cli:app"
+openassay = "openassay.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/openassay"]
@@ -45,16 +46,39 @@ packages = ["src/openassay"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# A local openfit checkout may be nested here for development; never lint it as
+# part of openassay (it is a separate project) and never let it skew import
+# classification.
+extend-exclude = ["openfit", ".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
+
+[tool.ruff.lint.isort]
+# openfit is a third-party dependency, not first-party, even when a sibling
+# checkout is present in the tree.
+known-third-party = ["openfit"]
 
 [tool.mypy]
 python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+mypy_path = ["src", "openfit/src"]
+exclude = ["openfit/", "\\.venv/"]
+
+[[tool.mypy.overrides]]
+# These libraries ship no type stubs in this environment.
+module = ["pandas"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# openfit is the external fitting engine. A nested checkout may be present for
+# API inspection, but openassay's strict mypy gate should not type-check openfit.
+module = ["openfit"]
+follow_imports = "skip"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+pythonpath = ["src", "openfit/src"]
