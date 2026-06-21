@@ -69,6 +69,8 @@ deprecation shim where practical).
   back-transformed to the reporting scale.
 - Stored ADA cut-point validation fixture for screening, confirmatory,
   nonparametric, and floating-multiplier outputs.
+- Project plan updated to mark v0.5.0 complete and route the next phase to
+  384-well and batch-processing work.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

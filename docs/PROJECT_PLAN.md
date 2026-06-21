@@ -120,11 +120,12 @@ What exists on `master` today:
 
 Remaining gaps vs. the agent loop's **Public API Targets**:
 
-- ADA functional API (`screen_cut_point`, `confirm_cut_point`) is not yet
-  present.
 - Current wrappers include `fit_standard_curve`, `back_calculate_many`,
   `determine_lloq_uloq`, `read_plate`, `test_parallelism`,
-  `relative_potency`, and `report_run`.
+  `relative_potency`, `screen_cut_point`, `confirm_cut_point`, and
+  `report_run`.
+- Remaining later-phase APIs include 384-well/batch helpers and PDF/DOCX report
+  renderers.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
@@ -523,7 +524,7 @@ never `--no-verify`, never force-push.
 - **Risks:** choice of F-test vs equivalence default; expose both, document the
   trade-off, default to the more conservative reportability.
 
-### v0.5.0 — ADA Cut Points (IN PROGRESS)
+### v0.5.0 — ADA Cut Points (COMPLETE)
 
 - **Goal:** screening and confirmatory cut points for anti-drug-antibody assays.
 - **Modules/API:** `ada.screen_cut_point`, `ada.confirm_cut_point`, `ADAResult`.
@@ -719,10 +720,10 @@ disclaimer; validation suite documents agreement with references.
 
 ## 15. Immediate Next Actions (when implementation resumes)
 
-1. Start v0.5.0 ADA cut-point workflows on a new phase branch.
-2. Implement `ADAResult`, `screen_cut_point`, and `confirm_cut_point`.
-3. Add multi-donor/multi-run fixtures, plus refusal tests for insufficient
-   biological variability.
+1. Start v0.6.0 384-well and batch-processing work on a new phase branch.
+2. Extend plate support beyond 96 wells without breaking existing 96-well
+   behavior.
+3. Add multi-plate aggregation and partial-failure reporting.
 4. Keep the universal gate green before each commit and push.
 
 > This plan is a living document. Update it at the start and end of each phase so
