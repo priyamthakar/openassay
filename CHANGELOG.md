@@ -27,6 +27,7 @@ deprecation shim where practical).
   accuracy/precision level summaries.
 - GitHub Actions CI for pytest, Ruff, mypy, and package build checks across
   Python 3.10-3.12 on Windows, macOS, and Linux.
+- Synthetic FDA/ICH M10-style calibration/QC validation fixture.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

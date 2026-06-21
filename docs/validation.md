@@ -23,6 +23,8 @@ Covered in the current test suite:
 - Anchor results are excluded from acceptance decisions.
 - HTML and Markdown reports contain the required openassay disclaimer.
 - Bundled CSV examples run through the CLI and generate reports.
+- A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,
+  back-calculation, and replicate acceptance checks.
 
 ## Synthetic Example Data
 
@@ -31,10 +33,24 @@ The repository includes a small illustrative CSV workflow:
 - `examples/data/standards.csv`: five standard-curve points.
 - `examples/data/samples.csv`: three unknown samples with dilution factors.
 
+The repository also includes a validation fixture:
+
+- `tests/fixtures/validation/m10_calibration_qc.csv`
+- `tests/fixtures/validation/m10_calibration_qc_expected.json`
+
+This fixture is generated from a known 4PL curve:
+
+- Bottom: `1.0`
+- Top: `100.0`
+- EC50: `5.0`
+- HillSlope: `1.2`
+- Weighting: `1/y2`
+
 Smoke-test command:
 
 ```powershell
 python -m pytest tests/test_examples.py
+python -m pytest tests/test_validation_fixtures.py
 ```
 
 Manual CLI commands:
@@ -70,7 +86,7 @@ Not yet added:
 
 - R `drda` / `nplr` cross-checks for shared synthetic 4PL/5PL datasets.
 - Stored reference outputs with parameter and back-calculation tolerances.
-- FDA/ICH M10-style calibration and QC validation fixtures.
+- External FDA/ICH M10-style reference outputs.
 
 When added, reference checks should store only input data, outputs, tolerances,
 software versions, and provenance. Do not copy third-party package source.
