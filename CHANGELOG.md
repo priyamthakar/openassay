@@ -63,6 +63,8 @@ deprecation shim where practical).
   indices recorded in `ADAResult`.
 - CLI `openassay ada screen` and `openassay ada confirm` commands for CSV
   cut-point workflows.
+- Fixed vs floating ADA cut-point modes, with floating mode reported as a
+  run-normalized multiplier.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

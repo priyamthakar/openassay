@@ -532,9 +532,8 @@ never `--no-verify`, never force-push.
   - **Screening cut point:** based on drug-naive samples across multiple
     donors/runs. Parametric option: `mean + 1.645·SD` (5% FPR) on raw or
     log/normalized signal after normality check; non-parametric option: 95th
-    percentile. Fixed vs floating cut points (floating = multiplier applied to
-    each run's negative-control mean) selected by an analysis of run/analyst
-    variance.
+    percentile. Fixed vs floating cut points are selectable; floating mode is a
+    multiplier applied to each run's negative-control mean.
   - **Confirmatory cut point:** percent inhibition in the competition assay,
     typically at 1% FPR (99th percentile or `mean + 2.33·SD`).
   - **Outlier handling:** documented, reproducible (Tukey option implemented),

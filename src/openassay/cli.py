@@ -209,6 +209,7 @@ if typer is not None:
         method: str = typer.Option("parametric", help="Cut-point method"),
         fp_rate: float = typer.Option(0.05, help="False-positive rate"),
         outlier_method: str = typer.Option("none", help="Outlier method: none or tukey"),
+        cut_point_type: str = typer.Option("fixed", help="Cut-point type: fixed or floating"),
     ) -> None:
         """Estimate an ADA screening cut point from CSV data."""
         import pandas as pd
@@ -218,8 +219,10 @@ if typer is not None:
             method=method,
             fp_rate=fp_rate,
             outlier_method=outlier_method,
+            cut_point_type=cut_point_type,
         )
         print(f"Evaluable: {result.evaluable}")
+        print(f"Cut-point type: {result.cut_point_type}")
         if result.cut_point is None:
             print("Cut point: not evaluable")
         else:
@@ -235,6 +238,7 @@ if typer is not None:
         method: str = typer.Option("parametric", help="Cut-point method"),
         fp_rate: float = typer.Option(0.01, help="False-positive rate"),
         outlier_method: str = typer.Option("none", help="Outlier method: none or tukey"),
+        cut_point_type: str = typer.Option("fixed", help="Cut-point type: fixed or floating"),
     ) -> None:
         """Estimate an ADA confirmatory cut point from CSV data."""
         import pandas as pd
@@ -244,8 +248,10 @@ if typer is not None:
             method=method,
             fp_rate=fp_rate,
             outlier_method=outlier_method,
+            cut_point_type=cut_point_type,
         )
         print(f"Evaluable: {result.evaluable}")
+        print(f"Cut-point type: {result.cut_point_type}")
         if result.cut_point is None:
             print("Cut point: not evaluable")
         else:

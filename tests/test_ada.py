@@ -32,6 +32,7 @@ def test_screen_cut_point_parametric_uses_false_positive_rate() -> None:
     assert isinstance(result, ADAResult)
     assert result.evaluable is True
     assert result.cut_point == pytest.approx(105.397226)
+    assert result.cut_point_type == "fixed"
     assert result.fp_rate == 0.05
     assert result.n_samples == 2
     assert result.n_runs == 2
@@ -44,6 +45,23 @@ def test_screen_cut_point_nonparametric_percentile() -> None:
 
     assert result.evaluable is True
     assert result.cut_point == pytest.approx(103.25)
+
+
+def test_screen_cut_point_floating_multiplier_normalizes_by_run() -> None:
+    """Floating cut points should be run-normalized multipliers."""
+    data = [
+        {"sample_id": "d1", "run_id": "r1", "response": 100.0},
+        {"sample_id": "d2", "run_id": "r1", "response": 110.0},
+        {"sample_id": "d1", "run_id": "r2", "response": 200.0},
+        {"sample_id": "d2", "run_id": "r2", "response": 220.0},
+    ]
+
+    result = screen_cut_point(data, cut_point_type="floating")
+
+    assert result.evaluable is True
+    assert result.cut_point_type == "floating"
+    assert result.cut_point == pytest.approx(1.090443)
+    assert "run-normalized multiplier" in " ".join(result.reasons)
 
 
 def test_confirm_cut_point_uses_confirmatory_default_fp_rate() -> None:
@@ -83,6 +101,12 @@ def test_screen_cut_point_default_keeps_outlying_values() -> None:
     assert result.excluded_indices == []
     assert result.cut_point is not None
     assert result.cut_point > 120.0
+
+
+def test_screen_cut_point_rejects_invalid_cut_point_type() -> None:
+    """Cut-point type must be explicit when not fixed/floating."""
+    with pytest.raises(ValueError, match="cut_point_type"):
+        screen_cut_point(negative_controls(), cut_point_type="adaptive")
 
 
 def test_ada_cut_point_refuses_single_run() -> None:
