@@ -79,6 +79,8 @@ deprecation shim where practical).
   PDF/DOCX report renderers.
 - Optional ReportLab PDF and python-docx DOCX run-report renderers with
   `report_run` dispatch and missing-dependency `ReportError` guidance.
+- CLI report generation now routes through `report_run`, enabling PDF/DOCX
+  report output from existing fit/backcalc commands.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

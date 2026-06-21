@@ -19,7 +19,7 @@ from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
 from openassay.ingest import read_plate
 from openassay.potency import relative_potency
-from openassay.report import generate_html_report, generate_markdown_report
+from openassay.report import report_run
 from openassay.types import Role
 
 if typer is not None:
@@ -101,10 +101,7 @@ if typer is not None:
 
         acceptance = AcceptanceResult(passed=True, reasons=["CLI example"])
 
-        if str(report).endswith(".md"):
-            generate_markdown_report(result, [], acceptance, str(report))
-        else:
-            generate_html_report(result, [], acceptance, str(report))
+        report_run(result, [], acceptance, report)
 
         print(f"Report written to {report}")
 
@@ -140,10 +137,7 @@ if typer is not None:
 
         acceptance = run_acceptance(backcalc_results)
 
-        if str(report).endswith(".md"):
-            generate_markdown_report(curve_result, backcalc_results, acceptance, str(report))
-        else:
-            generate_html_report(curve_result, backcalc_results, acceptance, str(report))
+        report_run(curve_result, backcalc_results, acceptance, report)
 
         print(f"Report written to {report}")
 

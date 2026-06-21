@@ -66,6 +66,38 @@ def test_cli_backcalc_accepts_documented_curve_option(tmp_path) -> None:
     assert "Report written to" in result.output
 
 
+def test_cli_fit_curve_can_write_pdf_report(tmp_path) -> None:
+    """The fit-curve CLI should use report_run dispatch for PDF reports."""
+    from pypdf import PdfReader
+
+    assert app is not None
+
+    curve_path = tmp_path / "standards.csv"
+    report_path = tmp_path / "standard_curve.pdf"
+    curve_path.write_text(
+        "\n".join(
+            [
+                "concentration,response",
+                "0.1,2.0",
+                "0.3,5.0",
+                "1.0,20.0",
+                "10.0,80.0",
+                "100.0,98.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        ["fit-curve", str(curve_path), "--report", str(report_path)],
+    )
+
+    assert result.exit_code == 0
+    text = "\n".join(page.extract_text() or "" for page in PdfReader(report_path).pages)
+    assert "openassay Run Report" in text
+
+
 def test_cli_plate_parse_summarizes_tidy_plate(tmp_path) -> None:
     """The plate parse command should summarize roles and collapsed groups."""
     assert app is not None
