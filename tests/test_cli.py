@@ -64,3 +64,30 @@ def test_cli_backcalc_accepts_documented_curve_option(tmp_path) -> None:
     assert result.exit_code == 0
     assert report_path.exists()
     assert "Report written to" in result.output
+
+
+def test_cli_plate_parse_summarizes_tidy_plate(tmp_path) -> None:
+    """The plate parse command should summarize roles and collapsed groups."""
+    assert app is not None
+
+    plate_path = tmp_path / "plate.csv"
+    plate_path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,response,replicate_group",
+                "A1,blank,blank,2.0,blank",
+                "B1,qc,qc-low,11.0,qc-low",
+                "B2,qc,qc-low,13.0,qc-low",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["plate", "parse", str(plate_path)])
+
+    assert result.exit_code == 0
+    assert "Wells: 3" in result.output
+    assert "qc=2" in result.output
+    assert "blank=1" in result.output
+    assert "Collapsed groups: 1" in result.output
+    assert "qc:qc-low" in result.output

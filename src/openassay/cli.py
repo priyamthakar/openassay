@@ -14,12 +14,17 @@ from openassay import __version__
 from openassay.acceptance import run_acceptance
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
+from openassay.ingest import read_plate
 from openassay.report import generate_html_report, generate_markdown_report
+from openassay.types import Role
 
 if typer is not None:
     app = typer.Typer(help="openassay CLI")
+    plate_app = typer.Typer(help="Plate layout and plate data commands")
+    app.add_typer(plate_app, name="plate")
 else:
     app = None
+    plate_app = None
 
 
 def _missing_cli() -> None:
@@ -120,6 +125,33 @@ if typer is not None:
             generate_html_report(curve_result, backcalc_results, acceptance, str(report))
 
         print(f"Report written to {report}")
+
+    @plate_app.command("parse")
+    def plate_parse(
+        data: Path = typer.Argument(..., help="Path to plate data CSV"),
+        format: str = typer.Option("tidy", help="Input format: tidy or matrix"),
+        layout: Path | None = typer.Option(None, help="Layout CSV for matrix input"),
+        subtract_blank: bool = typer.Option(True, help="Subtract mean blank before collapse"),
+    ) -> None:
+        """Parse plate data and print a compact summary."""
+        plate = read_plate(data, format=format, layout=layout)
+        collapsed = plate.collapse_replicates(subtract_blank=subtract_blank)
+        roles: tuple[Role, ...] = ("standard", "anchor", "qc", "unknown", "blank")
+        role_counts = {role: len(plate.layout.by_role(role)) for role in roles}
+        blank = plate.blank_response()
+
+        print(f"Wells: {len(plate.wells)}")
+        print(
+            "Roles: " + ", ".join(f"{role}={count}" for role, count in role_counts.items() if count)
+        )
+        if blank is not None:
+            print(f"Blank mean: {blank:.6g}")
+        print(f"Collapsed groups: {len(collapsed)}")
+        for group in collapsed:
+            print(
+                f"- {group.role}:{group.replicate_group} "
+                f"n={group.n} mean={group.mean_response:.6g} cv={group.cv_percent:.3g}%"
+            )
 
 
 if __name__ == "__main__":
