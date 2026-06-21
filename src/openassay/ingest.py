@@ -10,6 +10,16 @@ import pandas as pd
 from openassay.plate import PlateData, PlateLayout, Well, make_plate_well
 
 
+def _read_table(path: str | Path, *, index_col: int | None = None) -> pd.DataFrame:
+    file_path = Path(path)
+    suffix = file_path.suffix.lower()
+    if suffix == ".csv":
+        return pd.read_csv(file_path, index_col=index_col)
+    if suffix in {".xlsx", ".xls"}:
+        return pd.read_excel(file_path, index_col=index_col)
+    raise ValueError("Plate input must be a .csv, .xlsx, or .xls file.")
+
+
 def _optional_float(value: Any) -> float | None:
     if pd.isna(value):
         return None
@@ -24,7 +34,7 @@ def _optional_string(value: Any) -> str | None:
 
 
 def _read_tidy_plate(path: str | Path, expected_wells: list[str] | None = None) -> PlateData:
-    df = pd.read_csv(path)
+    df = _read_table(path)
     required = {"well", "role", "response"}
     missing = required.difference(df.columns)
     if missing:
@@ -53,8 +63,8 @@ def _read_matrix_plate(
     layout: str | Path,
     expected_wells: list[str] | None = None,
 ) -> PlateData:
-    matrix = pd.read_csv(path, index_col=0)
-    layout_df = pd.read_csv(layout)
+    matrix = _read_table(path, index_col=0)
+    layout_df = _read_table(layout)
     required = {"well", "role"}
     missing = required.difference(layout_df.columns)
     if missing:

@@ -33,6 +33,7 @@ deprecation shim where practical).
 - Mean blank subtraction and replicate response collapse for parsed plate data.
 - Missing expected-well detection for plate layouts and tidy plate ingestion.
 - Matrix-format plate CSV reader using a separate tidy layout map.
+- Excel (`.xlsx`/`.xls`) support for tidy and matrix plate readers.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

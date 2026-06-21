@@ -70,6 +70,24 @@ def test_read_plate_tidy_csv(tmp_path) -> None:
     assert plate.wells[2].nominal_concentration is None
 
 
+def test_read_plate_tidy_excel(tmp_path) -> None:
+    """Tidy Excel plate input should parse like tidy CSV."""
+    import pandas as pd
+
+    path = tmp_path / "plate.xlsx"
+    pd.DataFrame(
+        [
+            {"well": "A1", "role": "standard", "sample": "std-1", "response": 12.5},
+            {"well": "A2", "role": "unknown", "sample": "sample-1", "response": 45.0},
+        ]
+    ).to_excel(path, index=False)
+
+    plate = read_plate(path)
+
+    assert [str(well.well) for well in plate.wells] == ["A1", "A2"]
+    assert plate.wells[0].sample_name == "std-1"
+
+
 def test_read_plate_can_require_expected_wells(tmp_path) -> None:
     """Tidy ingestion should fail when explicitly required wells are absent."""
     path = tmp_path / "plate.csv"
@@ -109,6 +127,26 @@ def test_read_plate_matrix_csv_with_layout_map(tmp_path) -> None:
 
     assert [str(well.well) for well in plate.wells] == ["A1", "A2", "B1"]
     assert [well.response for well in plate.wells] == [10.0, 11.0, 20.0]
+
+
+def test_read_plate_matrix_excel_with_excel_layout_map(tmp_path) -> None:
+    """Matrix Excel input should use a separate Excel layout map."""
+    import pandas as pd
+
+    matrix_path = tmp_path / "matrix.xlsx"
+    layout_path = tmp_path / "layout.xlsx"
+    pd.DataFrame({"1": [10.0, 20.0], "2": [11.0, 21.0]}, index=["A", "B"]).to_excel(matrix_path)
+    pd.DataFrame(
+        [
+            {"well": "A1", "role": "standard", "sample": "std-1", "concentration": 1.0},
+            {"well": "B2", "role": "unknown", "sample": "sample-1"},
+        ]
+    ).to_excel(layout_path, index=False)
+
+    plate = read_plate(matrix_path, format="matrix", layout=layout_path)
+
+    assert [str(well.well) for well in plate.wells] == ["A1", "B2"]
+    assert [well.response for well in plate.wells] == [10.0, 21.0]
 
 
 def test_read_plate_matrix_requires_layout(tmp_path) -> None:
