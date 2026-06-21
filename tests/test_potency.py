@@ -30,6 +30,19 @@ def fit_result(
     )
 
 
+def fit_result_linear(
+    *,
+    slope: float = 2.0,
+    intercept: float = 1.0,
+    log_base: float = 10.0,
+):
+    return SimpleNamespace(
+        model_id="linear",
+        params={"Slope": slope, "Intercept": intercept},
+        log_base=log_base,
+    )
+
+
 def test_relative_potency_reportable_when_parallel() -> None:
     """Parallel horizontal shifts should report EC50-ratio potency."""
     result = relative_potency(fit_result(ec50=10.0), fit_result(ec50=5.0))
@@ -66,6 +79,31 @@ def test_relative_potency_rejects_unknown_parallelism_method() -> None:
     """Unsupported parallelism methods should fail explicitly."""
     with pytest.raises(ValueError, match="method='equivalence'"):
         relative_potency(fit_result(), fit_result(), method="f-test")
+
+
+def test_relative_potency_from_parallel_line_intercept_shift() -> None:
+    """Parallel-line potency should come from the intercept displacement."""
+    result = relative_potency(
+        fit_result_linear(slope=2.0, intercept=1.0),
+        fit_result_linear(slope=2.0, intercept=3.0),
+    )
+
+    assert result.reportable is True
+    assert result.point_estimate == pytest.approx(10.0)
+    assert result.confidence_interval is None
+    assert "intercept shift" in " ".join(result.reasons)
+
+
+def test_relative_potency_suppresses_parallel_line_when_slope_fails() -> None:
+    """Parallel-line potency is not reportable without slope equivalence."""
+    result = relative_potency(
+        fit_result_linear(slope=2.0),
+        fit_result_linear(slope=3.0),
+        tolerance=0.1,
+    )
+
+    assert result.reportable is False
+    assert result.point_estimate is None
 
 
 def test_relative_potency_not_reportable_when_parallelism_fails() -> None:

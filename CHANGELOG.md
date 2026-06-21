@@ -53,6 +53,8 @@ deprecation shim where practical).
 - Selectable parallelism method and confidence level passthrough for potency
   estimation and the `openassay parallelism` CLI.
 - Explicit 5PL parallelism coverage, including asymmetry-ratio failure.
+- Parallel-line relative-potency support from slope equivalence and intercept
+  displacement.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

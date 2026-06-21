@@ -26,6 +26,8 @@ Covered in the current test suite:
   and EC50-ratio potency.
 - EC50-ratio potency confidence intervals are derived from openfit covariance
   when finite EC50 variances are available.
+- Parallel-line potency is checked from slope equivalence and intercept
+  displacement.
 - HTML and Markdown reports contain the required openassay disclaimer.
 - Bundled CSV examples run through the CLI and generate reports.
 - A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,

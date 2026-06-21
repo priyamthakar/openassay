@@ -36,6 +36,13 @@ def fit_result_5pl(
     )
 
 
+def fit_result_linear(*, slope: float = 2.0, intercept: float = 1.0):
+    return SimpleNamespace(
+        model_id="linear",
+        params={"Slope": slope, "Intercept": intercept},
+    )
+
+
 def test_parallelism_passes_for_horizontal_shift() -> None:
     """Different EC50 with similar shape should be parallel."""
     result = test_parallelism(fit_result(ec50=10.0), fit_result(ec50=5.0))
@@ -71,6 +78,30 @@ def test_parallelism_fails_for_5pl_asymmetry_change() -> None:
 
     assert result.parallel is False
     assert "Asymmetry" in " ".join(result.reasons)
+
+
+def test_parallelism_passes_for_parallel_line_intercept_shift() -> None:
+    """Parallel-line fits can differ by intercept when slopes are equivalent."""
+    result = test_parallelism(
+        fit_result_linear(slope=2.0, intercept=1.0),
+        fit_result_linear(slope=2.1, intercept=3.0),
+        tolerance=0.1,
+    )
+
+    assert result.parallel is True
+    assert result.parameter_ratios["Slope"] == pytest.approx(1.05)
+
+
+def test_parallelism_fails_for_parallel_line_slope_change() -> None:
+    """Parallel-line fits fail when slope differs beyond tolerance."""
+    result = test_parallelism(
+        fit_result_linear(slope=2.0),
+        fit_result_linear(slope=3.0),
+        tolerance=0.1,
+    )
+
+    assert result.parallel is False
+    assert "Slope" in " ".join(result.reasons)
 
 
 def test_parallelism_rejects_model_mismatch() -> None:

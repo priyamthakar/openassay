@@ -27,6 +27,16 @@ def _parameter_ratio(test_value: float, reference_value: float) -> float:
     return test_value / reference_value
 
 
+def _shape_parameters(model_id: str) -> list[str]:
+    if model_id == "hill4p":
+        return ["Bottom", "Top", "HillSlope"]
+    if model_id == "hill5p":
+        return ["Bottom", "Top", "HillSlope", "Asymmetry"]
+    if model_id in {"linear", "log_linear", "parallel_line"}:
+        return ["Slope"]
+    raise ValueError("Parallelism currently supports hill4p, hill5p, and linear fits.")
+
+
 def test_parallelism(
     reference: Any,
     test: Any,
@@ -36,9 +46,10 @@ def test_parallelism(
 ) -> ParallelismResult:
     """Assess 4PL/5PL curve parallelism from fitted shape parameters.
 
-    This first implementation uses a conservative equivalence screen: Bottom,
-    Top, and HillSlope ratios must remain within ``1 +/- tolerance``. EC50 is
-    allowed to differ because horizontal shift is the relative-potency signal.
+    The equivalence screen compares fitted shape parameters within
+    ``1 +/- tolerance``. EC50 is allowed to differ for 4PL/5PL curves, and
+    intercept is allowed to differ for parallel-line fits because those shifts
+    are the relative-potency signal.
     """
     if method != "equivalence":
         raise ValueError("Only method='equivalence' is currently supported.")
@@ -55,12 +66,7 @@ def test_parallelism(
             parameter_ratios={},
             tolerance=tolerance,
         )
-    if reference_fit.model_id not in {"hill4p", "hill5p"}:
-        raise ValueError("Parallelism currently supports hill4p and hill5p fits.")
-
-    compared = ["Bottom", "Top", "HillSlope"]
-    if reference_fit.model_id == "hill5p":
-        compared.append("Asymmetry")
+    compared = _shape_parameters(str(reference_fit.model_id))
 
     ratios: dict[str, float] = {}
     reasons: list[str] = []
