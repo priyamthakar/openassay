@@ -77,6 +77,8 @@ deprecation shim where practical).
   replicate aggregation.
 - Project plan updated to mark v0.6.0 complete and route the next phase to
   PDF/DOCX report renderers.
+- Optional ReportLab PDF and python-docx DOCX run-report renderers with
+  `report_run` dispatch and missing-dependency `ReportError` guidance.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

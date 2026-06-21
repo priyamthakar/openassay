@@ -27,6 +27,8 @@ cli = [
 ]
 reports = [
     "jinja2>=3.1.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.1.0",
 ]
 dev = [
     "pytest>=7.4.0",
@@ -69,7 +71,7 @@ exclude = ["openfit/", "\\.venv/"]
 
 [[tool.mypy.overrides]]
 # These libraries ship no type stubs in this environment.
-module = ["pandas"]
+module = ["pandas", "reportlab.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

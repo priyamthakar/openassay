@@ -5,11 +5,20 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from openassay.errors import ReportError
+
 DISCLAIMER = (
     "This report was generated using openassay (open-source). "
     "Final acceptance decisions and regulatory interpretation should be "
     "reviewed by qualified bioanalytical scientists."
 )
+
+
+def _missing_report_dependency(package: str) -> ReportError:
+    return ReportError(
+        f"{package} is required for this report format. "
+        "Install optional report dependencies with: pip install 'openassay[reports]'."
+    )
 
 
 def generate_html_report(
@@ -150,6 +159,91 @@ def generate_markdown_report(
         f.write(md_content)
 
 
+def generate_pdf_report(
+    curve_result: Any,
+    backcalc_results: list[Any],
+    acceptance_result: Any,
+    path: str,
+) -> None:
+    """Generate a simple PDF report using optional ReportLab dependency."""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+    except ImportError as exc:  # pragma: no cover - exercised with monkeypatch tests.
+        raise _missing_report_dependency("reportlab") from exc
+
+    pdf = canvas.Canvas(path, pagesize=letter)
+    _, height = letter
+    y = height - 72
+
+    def line(text: str) -> None:
+        nonlocal y
+        if y < 72:
+            pdf.showPage()
+            y = height - 72
+        pdf.drawString(72, y, text)
+        y -= 16
+
+    line("openassay Run Report")
+    line(f"Model: {curve_result.fit_result.model_id}")
+    line(f"Weighting: {curve_result.fit_result.weight_scheme}")
+    line(f"R^2: {curve_result.fit_result.r_squared:.4f}")
+    line("Parameters:")
+    for name, val in curve_result.fit_result.params.items():
+        se = curve_result.fit_result.se.get(name, float("nan"))
+        line(f"- {name}: {val:.4g} (SE {se:.4g})")
+    line("Back-Calculated Samples:")
+    for res in backcalc_results:
+        line(
+            f"- {res.sample_name}: predicted {res.predicted_concentration:.4g}, "
+            f"diluted {res.diluted_concentration:.4g}"
+        )
+    line(f"Acceptance passed: {acceptance_result.passed}")
+    for reason in acceptance_result.reasons:
+        line(f"- {reason}")
+    line(DISCLAIMER)
+    pdf.save()
+
+
+def generate_docx_report(
+    curve_result: Any,
+    backcalc_results: list[Any],
+    acceptance_result: Any,
+    path: str,
+) -> None:
+    """Generate a simple DOCX report using optional python-docx dependency."""
+    try:
+        from docx import Document
+    except ImportError as exc:  # pragma: no cover - exercised with monkeypatch tests.
+        raise _missing_report_dependency("python-docx") from exc
+
+    document = Document()
+    document.add_heading("openassay Run Report", level=1)
+    document.add_heading("Standard Curve", level=2)
+    document.add_paragraph(f"Model: {curve_result.fit_result.model_id}")
+    document.add_paragraph(f"Weighting: {curve_result.fit_result.weight_scheme}")
+    document.add_paragraph(f"R^2: {curve_result.fit_result.r_squared:.4f}")
+
+    document.add_heading("Parameters", level=2)
+    for name, val in curve_result.fit_result.params.items():
+        se = curve_result.fit_result.se.get(name, float("nan"))
+        document.add_paragraph(f"{name}: {val:.4g} (SE {se:.4g})")
+
+    document.add_heading("Back-Calculated Samples", level=2)
+    for res in backcalc_results:
+        document.add_paragraph(
+            f"{res.sample_name}: predicted {res.predicted_concentration:.4g}, "
+            f"diluted {res.diluted_concentration:.4g}"
+        )
+
+    document.add_heading("Acceptance", level=2)
+    document.add_paragraph(f"Passed: {acceptance_result.passed}")
+    for reason in acceptance_result.reasons:
+        document.add_paragraph(reason, style="List Bullet")
+    document.add_paragraph(DISCLAIMER)
+    document.save(path)
+
+
 def report_run(
     curve_result: Any,
     backcalc_results: list[Any],
@@ -168,7 +262,11 @@ def report_run(
         generate_markdown_report(
             curve_result, backcalc_results, acceptance_result, str(output_path)
         )
+    elif report_format == "pdf":
+        generate_pdf_report(curve_result, backcalc_results, acceptance_result, str(output_path))
+    elif report_format == "docx":
+        generate_docx_report(curve_result, backcalc_results, acceptance_result, str(output_path))
     else:
-        raise ValueError("format must be 'auto', 'html', or 'markdown'")
+        raise ValueError("format must be 'auto', 'html', 'markdown', 'pdf', or 'docx'")
 
     return output_path

@@ -11,7 +11,13 @@ from openassay.ada import screen_cut_point
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
 from openassay.potency import relative_potency
-from openassay.report import DISCLAIMER, generate_html_report, generate_markdown_report
+from openassay.report import (
+    DISCLAIMER,
+    generate_docx_report,
+    generate_html_report,
+    generate_markdown_report,
+    generate_pdf_report,
+)
 
 
 def test_standard_curves_default_to_1_y2_weighting() -> None:
@@ -183,9 +189,15 @@ def test_reports_include_required_disclaimer(tmp_path) -> None:
     acceptance = AcceptanceResult(passed=True, reasons=["ok"])
     html_path = tmp_path / "report.html"
     md_path = tmp_path / "report.md"
+    pdf_path = tmp_path / "report.pdf"
+    docx_path = tmp_path / "report.docx"
 
     generate_html_report(curve_result, [], acceptance, str(html_path))
     generate_markdown_report(curve_result, [], acceptance, str(md_path))
+    generate_pdf_report(curve_result, [], acceptance, str(pdf_path))
+    generate_docx_report(curve_result, [], acceptance, str(docx_path))
 
     assert DISCLAIMER in html_path.read_text(encoding="utf-8")
     assert DISCLAIMER in md_path.read_text(encoding="utf-8")
+    assert pdf_path.exists()
+    assert docx_path.exists()

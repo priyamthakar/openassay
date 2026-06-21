@@ -562,7 +562,7 @@ never `--no-verify`, never force-push.
 - **Gate:** above + universal gate.
 - **Risks:** memory/perf at 384×N; vectorize and add a perf smoke test.
 
-### v0.7.0 — PDF/DOCX Reports
+### v0.7.0 — PDF/DOCX Reports (IN PROGRESS)
 
 - **Goal:** regulator-friendly PDF and DOCX outputs.
 - **Modules/API:** `report/pdf.py` (reportlab), `report/docx.py` (python-docx),
