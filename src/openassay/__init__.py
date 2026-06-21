@@ -4,7 +4,7 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
-from openassay.acceptance import AcceptanceResult, run_acceptance
+from openassay.acceptance import AcceptanceResult, LevelStats, run_acceptance
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import CalibrationResult, StandardCurve
 
@@ -14,5 +14,6 @@ __all__ = [
     "Sample",
     "back_calculate",
     "AcceptanceResult",
+    "LevelStats",
     "run_acceptance",
 ]
