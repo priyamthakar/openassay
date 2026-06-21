@@ -90,6 +90,8 @@ deprecation shim where practical).
   v1.0 API surface.
 - Expanded bundled examples to cover plate parsing, parallelism/potency, and
   ADA CLI workflows with smoke-test coverage.
+- Validation evidence updated with the current v1.0 hardening gate and full
+  runnable example command set.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

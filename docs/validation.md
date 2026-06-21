@@ -80,6 +80,10 @@ Manual CLI commands:
 ```powershell
 python -m openassay.cli fit-curve examples\data\standards.csv --model 4pl --weights 1/y2 --report examples\out\standard_curve.html
 python -m openassay.cli backcalc examples\data\samples.csv --curve examples\data\standards.csv --report examples\out\backcalc_report.html
+python -m openassay.cli plate parse examples\data\plate_tidy.csv
+python -m openassay.cli parallelism examples\data\parallel_reference.json examples\data\parallel_test.json
+python -m openassay.cli ada screen examples\data\ada_screen.csv --cut-point-type floating --transform log
+python -m openassay.cli ada confirm examples\data\ada_confirm.csv
 ```
 
 ## Verification Commands
@@ -94,9 +98,9 @@ python -m mypy src/openassay
 python -m build
 ```
 
-Latest local evidence after the v0.7 PDF/DOCX reporting workflow was completed:
+Latest local evidence after the v1.0 API-docs and runnable-examples hardening:
 
-- `python -m pytest`: 114 passed.
+- `python -m pytest`: 117 passed.
 - `python -m ruff check src tests`: passed.
 - `python -m ruff format --check src tests`: passed.
 - `python -m mypy src/openassay`: passed.
