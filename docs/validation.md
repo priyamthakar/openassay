@@ -32,7 +32,10 @@ Covered in the current test suite:
   while preserving 96-well defaults.
 - Batch helpers collect partial failures and aggregate replicate-collapsed
   results across multiple plates.
-- HTML and Markdown reports contain the required openassay disclaimer.
+- HTML, Markdown, PDF, and DOCX reports contain the required openassay
+  disclaimer, and binary report smoke tests parse the generated artifacts.
+- Missing optional report dependencies for PDF and DOCX raise `ReportError`
+  with guidance to install `openassay[reports]`.
 - Bundled CSV examples run through the CLI and generate reports.
 - A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,
   back-calculation, and replicate acceptance checks.
@@ -86,9 +89,9 @@ python -m mypy src/openassay
 python -m build
 ```
 
-Latest local evidence after the v0.6 384-well and batch workflow was completed:
+Latest local evidence after the v0.7 PDF/DOCX reporting workflow was completed:
 
-- `python -m pytest`: 109 passed.
+- `python -m pytest`: 114 passed.
 - `python -m ruff check src tests`: passed.
 - `python -m ruff format --check src tests`: passed.
 - `python -m mypy src/openassay`: passed.
@@ -126,4 +129,5 @@ software versions, and provenance. Do not copy third-party package source.
 - The current examples are smoke tests, not regulatory validation datasets.
 - Acceptance computes per-level bias and CV only when nominal concentrations are
   present on result-like objects.
-- PDF/DOCX report validation is planned for the reports phase.
+- PDF/DOCX report validation is smoke-level artifact parsing and disclaimer
+  checking, not visual layout validation.

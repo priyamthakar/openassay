@@ -123,8 +123,9 @@ Remaining gaps vs. the agent loop's **Public API Targets**:
 - Current wrappers include `fit_standard_curve`, `back_calculate_many`,
   `determine_lloq_uloq`, `read_plate`, `test_parallelism`,
   `relative_potency`, `screen_cut_point`, `confirm_cut_point`, and
-  `report_run`.
-- Remaining later-phase APIs include PDF/DOCX report renderers.
+  `report_run` with HTML, Markdown, PDF, and DOCX output.
+- Remaining later-phase work is v1.0 API/doc/release hardening rather than
+  missing public workflow APIs.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
@@ -562,7 +563,7 @@ never `--no-verify`, never force-push.
 - **Gate:** above + universal gate.
 - **Risks:** memory/perf at 384×N; vectorize and add a perf smoke test.
 
-### v0.7.0 — PDF/DOCX Reports (IN PROGRESS)
+### v0.7.0 — PDF/DOCX Reports (COMPLETE)
 
 - **Goal:** regulator-friendly PDF and DOCX outputs.
 - **Modules/API:** `report/pdf.py` (reportlab), `report/docx.py` (python-docx),
@@ -573,7 +574,8 @@ never `--no-verify`, never force-push.
   HTML/MD via stdlib + jinja2-optional fallback; missing-dep path raises a clear
   `ReportError` telling the user to `pip install 'openassay[reports]'`.
 - **Tests:** HTML/PDF/DOCX smoke tests (file generated, parseable, contains
-  disclaimer + key fields); missing-dependency test asserts the helpful error.
+  disclaimer + key fields); missing-dependency tests assert the helpful error
+  for both ReportLab and python-docx.
 - **Gate:** above + universal gate.
 - **Risks:** native deps on CI; pin versions, test on all OSes.
 
@@ -719,11 +721,11 @@ disclaimer; validation suite documents agreement with references.
 
 ## 15. Immediate Next Actions (when implementation resumes)
 
-1. Start v0.7.0 PDF/DOCX report work on a new phase branch.
-2. Add optional report renderers behind `[reports]` while keeping core imports
-   functional without report extras.
-3. Add smoke tests for generated report artifacts and missing-dependency paths.
-4. Keep the universal gate green before each commit and push.
+1. Start v1.0.0 stable-release hardening on a new phase branch.
+2. Audit and freeze the public API in `__all__`.
+3. Complete runnable examples and generated API docs.
+4. Keep the universal gate, `python -m build`, and `twine check dist\*` green
+   before each commit and push.
 
 > This plan is a living document. Update it at the start and end of each phase so
 > it always reflects the real state of openassay.
