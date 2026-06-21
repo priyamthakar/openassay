@@ -1,0 +1,14 @@
+role,name,nominal_concentration,response,dilution_factor
+standard,std-0.1,0.1,1.897258,1.0
+standard,std-0.3,0.3,4.272052,1.0
+standard,std-1,1.0,13.533790,1.0
+standard,std-3,3.0,35.786350,1.0
+standard,std-10,10.0,69.976315,1.0
+standard,std-30,30.0,89.672239,1.0
+standard,std-100,100.0,97.353740,1.0
+qc,qc-low-a,0.8,10.883322,1.0
+qc,qc-low-b,0.8,10.883322,1.0
+qc,qc-mid-a,8.0,64.100478,1.0
+qc,qc-mid-b,8.0,64.100478,1.0
+qc,qc-high-a,80.0,96.569363,1.0
+qc,qc-high-b,80.0,96.569363,1.0
