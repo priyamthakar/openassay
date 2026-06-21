@@ -118,14 +118,13 @@ What exists on `master` today:
 - Tests for curve/backcalc/acceptance/report. CRLF line endings differ from
   HEAD's LF (cosmetic only).
 
-Gaps vs. the agent loop's **Public API Targets** that this plan will close:
+Remaining gaps vs. the agent loop's **Public API Targets**:
 
-- Remaining target functional API (`test_parallelism`, `relative_potency`,
-  `screen_cut_point`, `confirm_cut_point`) is not yet present. Current wrappers
-  include `fit_standard_curve`, `back_calculate_many`, `determine_lloq_uloq`,
-  `read_plate`, and `report_run`.
-- No pydantic models, no `pandas` ingestion layer, and no plate model — all
-  required by the loop.
+- ADA functional API (`screen_cut_point`, `confirm_cut_point`) is not yet
+  present.
+- Current wrappers include `fit_standard_curve`, `back_calculate_many`,
+  `determine_lloq_uloq`, `read_plate`, `test_parallelism`,
+  `relative_potency`, and `report_run`.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
@@ -363,8 +362,8 @@ prediction. The maintenance plan:
 
 ```python
 read_plate(path, *, layout=None, format="auto") -> PlateData          # v0.2.0
-test_parallelism(reference, test, *, method="f-test") -> ParallelismResult  # v0.4.0
-relative_potency(reference, test, *, require_parallelism=True) -> PotencyResult  # v0.4.0
+test_parallelism(reference, test, *, method="equivalence", tolerance=0.20) -> ParallelismResult  # v0.4.0
+relative_potency(reference, test, *, require_parallelism=True, method="equivalence", tolerance=0.20, confidence=0.95) -> PotencyResult  # v0.4.0
 screen_cut_point(data, *, method="parametric", fp_rate=0.05) -> ADAResult   # v0.5.0
 confirm_cut_point(data, *, fp_rate=0.01) -> ADAResult                  # v0.5.0
 report_run(run, path, *, format="html") -> Path                       # report
@@ -497,7 +496,7 @@ never `--no-verify`, never force-push.
 - **Risks:** off-by-one in "contiguous passing span"; cover with table-driven
   tests over hand-computed level sets.
 
-### v0.4.0 — Parallelism And Relative Potency (IN PROGRESS)
+### v0.4.0 — Parallelism And Relative Potency (COMPLETE)
 
 - **Goal:** compare a test preparation to a reference and report potency only
   when justified.
@@ -720,12 +719,11 @@ disclaimer; validation suite documents agreement with references.
 
 ## 15. Immediate Next Actions (when implementation resumes)
 
-1. Make openfit available (install pinned real openfit, or wire the
-   contract-faithful fake + `conftest.py` switch) so the v0.1.0 gate can run.
-2. Add `.gitattributes` (LF) and normalize line endings to kill the CRLF churn.
-3. Add external reference-output validation fixtures; tag the hardened result
-   `v0.1.1`.
-4. Proceed to v0.4.0 (parallelism and relative potency) on a new phase branch.
+1. Start v0.5.0 ADA cut-point workflows on a new phase branch.
+2. Implement `ADAResult`, `screen_cut_point`, and `confirm_cut_point`.
+3. Add multi-donor/multi-run fixtures, plus refusal tests for insufficient
+   biological variability.
+4. Keep the universal gate green before each commit and push.
 
 > This plan is a living document. Update it at the start and end of each phase so
 > it always reflects the real state of openassay.

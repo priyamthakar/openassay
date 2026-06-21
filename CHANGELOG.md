@@ -55,6 +55,8 @@ deprecation shim where practical).
 - Explicit 5PL parallelism coverage, including asymmetry-ratio failure.
 - Parallel-line relative-potency support from slope equivalence and intercept
   displacement.
+- Project plan updated to mark v0.4.0 complete and route the next phase to ADA
+  cut-point workflows.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

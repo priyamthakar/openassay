@@ -80,13 +80,14 @@ python -m mypy src/openassay
 python -m build
 ```
 
-Latest local evidence after the v0.4 potency confidence interval was added:
+Latest local evidence after the v0.4 parallel-line potency workflow was added:
 
-- `python -m pytest`: 71 passed.
+- `python -m pytest`: 79 passed.
 - `python -m ruff check src tests`: passed.
 - `python -m ruff format --check src tests`: passed.
 - `python -m mypy src/openassay`: passed.
 - `python -m build`: built sdist and wheel.
+- `python -m twine check dist\*`: passed.
 
 ## Reference Checks
 
