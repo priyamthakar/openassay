@@ -527,6 +527,7 @@ never `--no-verify`, never force-push.
 
 - **Goal:** screening and confirmatory cut points for anti-drug-antibody assays.
 - **Modules/API:** `ada.screen_cut_point`, `ada.confirm_cut_point`, `ADAResult`.
+- **CLI:** `openassay ada screen data.csv`; `openassay ada confirm data.csv`.
 - **Design (Shankar et al. 2008; FDA 2019; EMA 2017):**
   - **Screening cut point:** based on drug-naive samples across multiple
     donors/runs. Parametric option: `mean + 1.645·SD` (5% FPR) on raw or

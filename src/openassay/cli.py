@@ -14,6 +14,7 @@ except ImportError:
 
 from openassay import __version__
 from openassay.acceptance import run_acceptance
+from openassay.ada import confirm_cut_point, screen_cut_point
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
 from openassay.ingest import read_plate
@@ -24,10 +25,13 @@ from openassay.types import Role
 if typer is not None:
     app = typer.Typer(help="openassay CLI")
     plate_app = typer.Typer(help="Plate layout and plate data commands")
+    ada_app = typer.Typer(help="ADA cut-point commands")
     app.add_typer(plate_app, name="plate")
+    app.add_typer(ada_app, name="ada")
 else:
     app = None
     plate_app = None
+    ada_app = None
 
 
 def _missing_cli() -> None:
@@ -198,6 +202,58 @@ if typer is not None:
                 f"- {group.role}:{group.replicate_group} "
                 f"n={group.n} mean={group.mean_response:.6g} cv={group.cv_percent:.3g}%"
             )
+
+    @ada_app.command("screen")
+    def ada_screen(
+        data: Path = typer.Argument(..., help="Path to ADA negative-control CSV"),
+        method: str = typer.Option("parametric", help="Cut-point method"),
+        fp_rate: float = typer.Option(0.05, help="False-positive rate"),
+        outlier_method: str = typer.Option("none", help="Outlier method: none or tukey"),
+    ) -> None:
+        """Estimate an ADA screening cut point from CSV data."""
+        import pandas as pd
+
+        result = screen_cut_point(
+            pd.read_csv(data).to_dict(orient="records"),
+            method=method,
+            fp_rate=fp_rate,
+            outlier_method=outlier_method,
+        )
+        print(f"Evaluable: {result.evaluable}")
+        if result.cut_point is None:
+            print("Cut point: not evaluable")
+        else:
+            print(f"Cut point: {result.cut_point:.6g}")
+        if result.excluded_indices:
+            print("Excluded rows: " + ", ".join(str(index) for index in result.excluded_indices))
+        for reason in result.reasons:
+            print(f"- {reason}")
+
+    @ada_app.command("confirm")
+    def ada_confirm(
+        data: Path = typer.Argument(..., help="Path to ADA percent-inhibition CSV"),
+        method: str = typer.Option("parametric", help="Cut-point method"),
+        fp_rate: float = typer.Option(0.01, help="False-positive rate"),
+        outlier_method: str = typer.Option("none", help="Outlier method: none or tukey"),
+    ) -> None:
+        """Estimate an ADA confirmatory cut point from CSV data."""
+        import pandas as pd
+
+        result = confirm_cut_point(
+            pd.read_csv(data).to_dict(orient="records"),
+            method=method,
+            fp_rate=fp_rate,
+            outlier_method=outlier_method,
+        )
+        print(f"Evaluable: {result.evaluable}")
+        if result.cut_point is None:
+            print("Cut point: not evaluable")
+        else:
+            print(f"Cut point: {result.cut_point:.6g}")
+        if result.excluded_indices:
+            print("Excluded rows: " + ", ".join(str(index) for index in result.excluded_indices))
+        for reason in result.reasons:
+            print(f"- {reason}")
 
 
 if __name__ == "__main__":

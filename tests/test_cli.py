@@ -137,3 +137,51 @@ def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
     assert "Parallel: True" in result.output
     assert "Relative potency: 2" in result.output
     assert "95% CI:" in result.output
+
+
+def test_cli_ada_screen_reports_cut_point(tmp_path) -> None:
+    """The ADA screen command should estimate a CSV cut point."""
+    assert app is not None
+
+    data_path = tmp_path / "ada_screen.csv"
+    data_path.write_text(
+        "\n".join(
+            [
+                "sample_id,run_id,response",
+                "d1,r1,101.0",
+                "d2,r1,103.0",
+                "d1,r2,99.0",
+                "d2,r2,104.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["ada", "screen", str(data_path)])
+
+    assert result.exit_code == 0
+    assert "Evaluable: True" in result.output
+    assert "Cut point:" in result.output
+
+
+def test_cli_ada_confirm_reports_not_evaluable(tmp_path) -> None:
+    """The ADA confirm command should surface insufficient variability."""
+    assert app is not None
+
+    data_path = tmp_path / "ada_confirm.csv"
+    data_path.write_text(
+        "\n".join(
+            [
+                "sample_id,run_id,percent_inhibition",
+                "d1,r1,14.0",
+                "d2,r1,18.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["ada", "confirm", str(data_path)])
+
+    assert result.exit_code == 0
+    assert "Evaluable: False" in result.output
+    assert "Cut point: not evaluable" in result.output
