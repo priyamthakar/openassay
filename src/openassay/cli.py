@@ -147,15 +147,20 @@ if typer is not None:
     def parallelism_command(
         reference: Path = typer.Argument(..., help="Reference fit-result JSON"),
         test: Path = typer.Argument(..., help="Test fit-result JSON"),
+        method: str = typer.Option("equivalence", help="Parallelism method"),
         tolerance: float = typer.Option(0.20, help="Equivalence tolerance for shape ratios"),
+        confidence: float = typer.Option(0.95, help="Confidence level for potency interval"),
     ) -> None:
         """Check curve parallelism and report gated relative potency."""
         result = relative_potency(
             _read_fit_result_json(reference),
             _read_fit_result_json(test),
+            method=method,
             tolerance=tolerance,
+            confidence=confidence,
         )
 
+        print(f"Method: {result.parallelism.method}")
         print(f"Parallel: {result.parallelism.parallel}")
         if result.point_estimate is None:
             print("Relative potency: not reportable")

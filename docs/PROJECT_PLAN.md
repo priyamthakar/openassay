@@ -508,7 +508,8 @@ never `--no-verify`, never force-push.
     Use openfit for the fits; openassay assembles the comparison.
   - Parallelism tests: classical **F-test** for coincidence of shape parameters
     (and/or an **equivalence-test** option on the ratio of slope/upper/lower/
-    Hill parameters, which modern guidance prefers). Method selectable.
+    Hill parameters, which modern guidance prefers). Method selectable for
+    implemented methods.
   - **Relative potency** estimated from the horizontal shift between parallel
     curves (EC50 ratio for 4PL/5PL, or intercept difference for parallel lines),
     with a confidence interval derived from openfit covariance when available.

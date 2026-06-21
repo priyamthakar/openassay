@@ -68,6 +68,7 @@ def relative_potency(
     test: Any,
     *,
     require_parallelism: bool = True,
+    method: str = "equivalence",
     tolerance: float = 0.20,
     confidence: float = 0.95,
 ) -> PotencyResult:
@@ -75,7 +76,7 @@ def relative_potency(
     if not 0.0 < confidence < 1.0:
         raise ValueError("confidence must be between 0 and 1.")
 
-    parallelism = test_parallelism(reference, test, tolerance=tolerance)
+    parallelism = test_parallelism(reference, test, method=method, tolerance=tolerance)
     if require_parallelism and not parallelism.parallel:
         return PotencyResult(
             reportable=False,

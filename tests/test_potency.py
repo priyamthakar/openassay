@@ -55,6 +55,19 @@ def test_relative_potency_ci_uses_ec50_covariance() -> None:
     assert result.confidence == 0.95
 
 
+def test_relative_potency_passes_parallelism_method() -> None:
+    """Potency should expose the selected parallelism method."""
+    result = relative_potency(fit_result(), fit_result(), method="equivalence")
+
+    assert result.parallelism.method == "equivalence"
+
+
+def test_relative_potency_rejects_unknown_parallelism_method() -> None:
+    """Unsupported parallelism methods should fail explicitly."""
+    with pytest.raises(ValueError, match="method='equivalence'"):
+        relative_potency(fit_result(), fit_result(), method="f-test")
+
+
 def test_relative_potency_not_reportable_when_parallelism_fails() -> None:
     """Invariant 7: no potency estimate is emitted without parallelism."""
     result = relative_potency(fit_result(slope=1.0), fit_result(slope=1.8), tolerance=0.2)

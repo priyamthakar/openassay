@@ -50,6 +50,8 @@ deprecation shim where practical).
 - CLI `openassay parallelism` command for JSON fit-result parallelism checks and
   gated relative-potency output.
 - Optional covariance-based confidence interval for EC50-ratio relative potency.
+- Selectable parallelism method and confidence level passthrough for potency
+  estimation and the `openassay parallelism` CLI.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

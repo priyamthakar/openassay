@@ -133,6 +133,7 @@ def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
     result = runner.invoke(app, ["parallelism", str(reference_path), str(test_path)])
 
     assert result.exit_code == 0
+    assert "Method: equivalence" in result.output
     assert "Parallel: True" in result.output
     assert "Relative potency: 2" in result.output
     assert "95% CI:" in result.output
