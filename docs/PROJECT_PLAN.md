@@ -475,7 +475,7 @@ never `--no-verify`, never force-push.
 - **Risks:** layout-format ambiguity; mitigate with strict schema validation and
   clear errors rather than guessing.
 
-### v0.3.0 — LLOQ/ULOQ And Dilution (IN PROGRESS)
+### v0.3.0 — LLOQ/ULOQ And Dilution (DONE)
 
 - **Goal:** decide the validated reportable range and handle dilution properly.
 - **Modules/API:** `range.determine_lloq_uloq`, MRD support in `backcalc`.
@@ -722,7 +722,7 @@ disclaimer; validation suite documents agreement with references.
 2. Add `.gitattributes` (LF) and normalize line endings to kill the CRLF churn.
 3. Add external reference-output validation fixtures; tag the hardened result
    `v0.1.1`.
-4. Proceed to v0.3.0 (LLOQ/ULOQ and dilution) on a new phase branch.
+4. Proceed to v0.4.0 (parallelism and relative potency) on a new phase branch.
 
 > This plan is a living document. Update it at the start and end of each phase so
 > it always reflects the real state of openassay.

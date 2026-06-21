@@ -13,8 +13,8 @@ openassay never reimplements fitting logic.
 | **0.1.0** ✅ | Standard curves, back-calc, acceptance, HTML | 4PL/5PL via openfit, `1/y2` default weighting, dilution after inversion, HTML/MD reports |
 | **0.1.1** ✅ | Validation evidence + hardening | %RE/%CV acceptance, invariant test suite, validation fixtures, public inverse path, CHANGELOG/ROADMAP/examples |
 | **0.2.0** ✅ | Plate layouts | 96-well model, roles (standard/anchor/QC/unknown/blank), tidy + matrix import, replicate collapse, blank subtraction |
-| **0.3.0** 🔭 | LLOQ/ULOQ & dilution | Validated range from accuracy + precision, MRD handling, anchor exclusion, 10x/100x checks |
-| **0.4.0** | Parallelism & relative potency | F-test/equivalence parallelism, potency reportable only when parallel |
+| **0.3.0** ✅ | LLOQ/ULOQ & dilution | Validated range from accuracy + precision, MRD handling, anchor exclusion, 10x/100x checks |
+| **0.4.0** 🔭 | Parallelism & relative potency | F-test/equivalence parallelism, potency reportable only when parallel |
 | **0.5.0** | ADA cut points | Screening + confirmatory cut points, parametric & non-parametric, biological variability required |
 | **0.6.0** | 384-well & batch | 384-well plates, multi-plate/run aggregation, partial-failure reporting |
 | **0.7.0** | PDF/DOCX reports | ReportLab + python-docx renderers behind `[reports]`, core install stays lean |
