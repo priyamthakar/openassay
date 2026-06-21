@@ -47,6 +47,8 @@ deprecation shim where practical).
   `relative_potency`, with potency suppressed when parallelism fails.
 - Stored parallelism/potency reference fixture with hand-computed expected
   ratios and USP <1032>/<1034> conceptual provenance.
+- CLI `openassay parallelism` command for JSON fit-result parallelism checks and
+  gated relative-potency output.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

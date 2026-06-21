@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 try:
     import typer
@@ -15,6 +17,7 @@ from openassay.acceptance import run_acceptance
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
 from openassay.ingest import read_plate
+from openassay.potency import relative_potency
 from openassay.report import generate_html_report, generate_markdown_report
 from openassay.types import Role
 
@@ -42,6 +45,18 @@ def _normalize_model(model: str) -> str:
     if model_id not in {"hill4p", "hill5p"}:
         raise ValueError("model must be one of: 4pl, 5pl, hill4p, hill5p")
     return model_id
+
+
+def _read_fit_result_json(path: Path) -> SimpleNamespace:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    model = str(payload.get("model_id", payload.get("model", "")))
+    params = payload.get("params")
+    if not isinstance(params, dict):
+        raise ValueError("fit result JSON must contain a params object")
+    return SimpleNamespace(
+        model_id=_normalize_model(model),
+        params={str(name): float(value) for name, value in params.items()},
+    )
 
 
 def main() -> None:
@@ -125,6 +140,27 @@ if typer is not None:
             generate_html_report(curve_result, backcalc_results, acceptance, str(report))
 
         print(f"Report written to {report}")
+
+    @app.command("parallelism")
+    def parallelism_command(
+        reference: Path = typer.Argument(..., help="Reference fit-result JSON"),
+        test: Path = typer.Argument(..., help="Test fit-result JSON"),
+        tolerance: float = typer.Option(0.20, help="Equivalence tolerance for shape ratios"),
+    ) -> None:
+        """Check curve parallelism and report gated relative potency."""
+        result = relative_potency(
+            _read_fit_result_json(reference),
+            _read_fit_result_json(test),
+            tolerance=tolerance,
+        )
+
+        print(f"Parallel: {result.parallelism.parallel}")
+        if result.point_estimate is None:
+            print("Relative potency: not reportable")
+        else:
+            print(f"Relative potency: {result.point_estimate:.6g}")
+        for reason in result.parallelism.reasons:
+            print(f"- {reason}")
 
     @plate_app.command("parse")
     def plate_parse(

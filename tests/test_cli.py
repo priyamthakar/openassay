@@ -91,3 +91,35 @@ def test_cli_plate_parse_summarizes_tidy_plate(tmp_path) -> None:
     assert "blank=1" in result.output
     assert "Collapsed groups: 1" in result.output
     assert "qc:qc-low" in result.output
+
+
+def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
+    """The parallelism command should expose the potency gate."""
+    assert app is not None
+
+    reference_path = tmp_path / "reference.json"
+    test_path = tmp_path / "test.json"
+    reference_path.write_text(
+        """
+{
+  "model_id": "hill4p",
+  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0}
+}
+""".strip(),
+        encoding="utf-8",
+    )
+    test_path.write_text(
+        """
+{
+  "model_id": "hill4p",
+  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 5.0, "HillSlope": 1.0}
+}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["parallelism", str(reference_path), str(test_path)])
+
+    assert result.exit_code == 0
+    assert "Parallel: True" in result.output
+    assert "Relative potency: 2" in result.output
