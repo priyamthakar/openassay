@@ -22,6 +22,14 @@ def level(
     )
 
 
+def stat_level(nominal: float, *, bias_percent: float, cv_percent: float) -> SimpleNamespace:
+    return SimpleNamespace(
+        nominal_concentration=nominal,
+        bias_percent=bias_percent,
+        cv_percent=cv_percent,
+    )
+
+
 def test_determine_lloq_uloq_requires_accuracy_and_precision() -> None:
     """Only levels passing both checks should define the range."""
     result = determine_lloq_uloq(
@@ -65,3 +73,47 @@ def test_determine_lloq_uloq_returns_none_when_no_levels_pass() -> None:
     assert result.lloq is None
     assert result.uloq is None
     assert result.reportable_range is None
+
+
+def test_determine_lloq_uloq_applies_relaxed_extreme_tolerances() -> None:
+    """The lowest and highest non-anchor levels may use relaxed thresholds."""
+    result = determine_lloq_uloq(
+        [
+            level(0.1),
+            level(1.0),
+            level(10.0),
+        ],
+        accuracy_pct=20.0,
+        precision_pct=20.0,
+        extreme_accuracy_pct=25.0,
+        extreme_precision_pct=25.0,
+    )
+    result_from_stats = determine_lloq_uloq(
+        [
+            stat_level(0.1, bias_percent=24.0, cv_percent=24.0),
+            stat_level(1.0, bias_percent=19.0, cv_percent=19.0),
+            stat_level(10.0, bias_percent=24.0, cv_percent=24.0),
+        ],
+        accuracy_pct=20.0,
+        precision_pct=20.0,
+        extreme_accuracy_pct=25.0,
+        extreme_precision_pct=25.0,
+    )
+
+    assert result.reportable_range == (0.1, 10.0)
+    assert result_from_stats.reportable_range == (0.1, 10.0)
+
+
+def test_determine_lloq_uloq_strict_middle_level_breaks_range() -> None:
+    """Middle levels should not receive relaxed extreme tolerances."""
+    result = determine_lloq_uloq(
+        [
+            stat_level(0.1, bias_percent=0.0, cv_percent=0.0),
+            stat_level(1.0, bias_percent=24.0, cv_percent=0.0),
+            stat_level(10.0, bias_percent=0.0, cv_percent=0.0),
+        ],
+        accuracy_pct=20.0,
+        extreme_accuracy_pct=25.0,
+    )
+
+    assert result.reportable_range == (0.1, 0.1)

@@ -38,6 +38,8 @@ deprecation shim where practical).
   v0.3.0 as the next active phase.
 - Minimum required dilution (MRD) support in back-calculation, applied after
   inverse prediction alongside sample dilution.
+- Reportable range helper can evaluate raw bias/CV level stats with relaxed
+  LLOQ/ULOQ extreme tolerances.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
