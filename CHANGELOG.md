@@ -30,6 +30,7 @@ deprecation shim where practical).
 - Synthetic FDA/ICH M10-style calibration/QC validation fixture.
 - Initial 96-well tidy CSV plate reader with duplicate-well and non-finite
   response validation.
+- Mean blank subtraction and replicate response collapse for parsed plate data.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

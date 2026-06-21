@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
@@ -83,6 +84,60 @@ class PlateData:
     @property
     def wells(self) -> list[PlateWell]:
         return self.layout.wells
+
+    def blank_response(self) -> float | None:
+        """Return the mean blank response, if blank wells are present."""
+        blanks = [well.response for well in self.layout.by_role("blank")]
+        if not blanks:
+            return None
+        return float(np.mean(np.asarray(blanks, dtype=np.float64)))
+
+    def collapse_replicates(self, *, subtract_blank: bool = True) -> list[CollapsedReplicate]:
+        """Collapse wells by replicate group, optionally subtracting mean blank."""
+        blank = self.blank_response() if subtract_blank else None
+        groups: dict[tuple[Role, str], list[PlateWell]] = defaultdict(list)
+        for well in self.wells:
+            if well.role == "blank":
+                continue
+            group = well.replicate_group or well.sample_name or str(well.well)
+            groups[(well.role, group)].append(well)
+
+        collapsed: list[CollapsedReplicate] = []
+        for (role, group), wells in sorted(groups.items()):
+            responses = np.asarray(
+                [well.response - (blank or 0.0) for well in wells],
+                dtype=np.float64,
+            )
+            mean = float(np.mean(responses))
+            sd = float(np.std(responses, ddof=1)) if len(responses) > 1 else 0.0
+            cv = float(abs(sd / mean) * 100.0) if mean != 0.0 else float("inf")
+            collapsed.append(
+                CollapsedReplicate(
+                    role=role,
+                    replicate_group=group,
+                    n=len(wells),
+                    mean_response=mean,
+                    sd_response=sd,
+                    cv_percent=cv,
+                    sample_name=wells[0].sample_name,
+                    nominal_concentration=wells[0].nominal_concentration,
+                )
+            )
+        return collapsed
+
+
+@dataclass(frozen=True)
+class CollapsedReplicate:
+    """Replicate-collapsed plate response summary."""
+
+    role: Role
+    replicate_group: str
+    n: int
+    mean_response: float
+    sd_response: float
+    cv_percent: float
+    sample_name: str | None = None
+    nominal_concentration: float | None = None
 
 
 def make_plate_well(

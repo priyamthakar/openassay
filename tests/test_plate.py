@@ -60,3 +60,49 @@ def test_read_plate_rejects_non_finite_response(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="NaN or Inf"):
         read_plate(path)
+
+
+def test_plate_data_collapses_replicates_with_blank_subtraction(tmp_path) -> None:
+    """Replicate collapse should subtract mean blank response when requested."""
+    path = tmp_path / "plate.csv"
+    path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,concentration,response,replicate_group",
+                "A1,blank,blank,,1.0,blank",
+                "A2,blank,blank,,3.0,blank",
+                "B1,qc,qc-low,10.0,11.0,qc-low",
+                "B2,qc,qc-low,10.0,13.0,qc-low",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    plate = read_plate(path)
+    collapsed = plate.collapse_replicates()
+
+    assert plate.blank_response() == pytest.approx(2.0)
+    assert len(collapsed) == 1
+    assert collapsed[0].replicate_group == "qc-low"
+    assert collapsed[0].mean_response == pytest.approx(10.0)
+    assert collapsed[0].n == 2
+
+
+def test_plate_data_can_collapse_without_blank_subtraction(tmp_path) -> None:
+    """Blank subtraction should be optional."""
+    path = tmp_path / "plate.csv"
+    path.write_text(
+        "\n".join(
+            [
+                "well,role,sample,response,replicate_group",
+                "A1,blank,blank,2.0,blank",
+                "B1,unknown,sample-1,11.0,sample-1",
+                "B2,unknown,sample-1,13.0,sample-1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    collapsed = read_plate(path).collapse_replicates(subtract_blank=False)
+
+    assert collapsed[0].mean_response == pytest.approx(12.0)
