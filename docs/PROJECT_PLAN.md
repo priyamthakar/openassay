@@ -583,9 +583,9 @@ never `--no-verify`, never force-push.
 ### v1.0.0 — Stable Release
 
 - **Goal:** freeze public API, complete docs/examples, ship to PyPI.
-- **Work:** finalize `__all__` with an exact regression test; generate `docs/api/`; align
-  README/CHANGELOG/ROADMAP; complete runnable examples for every workflow;
-  CI matrix green on Windows/macOS/Linux × Python 3.10–3.12.
+- **Work:** finalize `__all__` with an exact regression test; generate
+  `docs/api/`; align README/CHANGELOG/ROADMAP; complete runnable examples for
+  every workflow; CI matrix green on Windows/macOS/Linux × Python 3.10–3.12.
 - **Gate:** `python -m build`, `twine check dist/*`, full pytest, ruff, mypy,
   docs build, examples execute; semantic-version freeze begins.
 - **Risks:** API regret post-freeze; mitigate with an API-review checkpoint

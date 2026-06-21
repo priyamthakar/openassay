@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import openassay as oa
 
 FROZEN_PUBLIC_API = [
@@ -59,3 +61,11 @@ def test_public_functional_api_exports() -> None:
     assert callable(oa.test_parallelism)
     assert callable(oa.report_run)
     assert callable(oa.run_batch)
+
+
+def test_api_reference_documents_frozen_exports() -> None:
+    """The API reference should mention every frozen top-level export."""
+    reference = Path("docs/api/reference.md").read_text(encoding="utf-8")
+
+    for public_name in FROZEN_PUBLIC_API:
+        assert f"`{public_name}`" in reference

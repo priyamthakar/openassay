@@ -19,21 +19,32 @@ bioanalytical acceptance, it belongs in openassay.
 
 ## Status
 
-v0.1.0 implementation branch. Current scope includes standard-curve fitting,
-sample back-calculation, basic LLOQ/ULOQ range checks, HTML/Markdown reports,
-and CLI entry points. See `OPENASSAY_AGENT_LOOP.md` for the future roadmap.
+v1.0.0 hardening branch. Current scope includes standard-curve fitting,
+sample back-calculation, LLOQ/ULOQ range decisions, calibrator/QC acceptance,
+plate parsing, batch helpers, relative potency, ADA cut points, HTML/Markdown/
+PDF/DOCX reports, and CLI entry points. See `ROADMAP.md` and
+`docs/PROJECT_PLAN.md` for the release plan.
 
 ## Current API
 
-- `StandardCurve(x, y, model="hill4p", weights="1/y2")` fits 4PL/5PL curves
+- `StandardCurve(x, y, model="hill4p", weights="1/y2")` and
+  `fit_standard_curve(...)` fit 4PL/5PL curves
   through openfit. Inputs with NaN or Inf are rejected.
 - `back_calculate(sample, fit_result, lloq=None, uloq=None)` performs inverse
   prediction and applies dilution after inversion. Responses outside the fitted
   curve range raise `ValueError` rather than returning a non-finite result.
-- `run_acceptance(results)` fails samples outside LLOQ/ULOQ and defensively
-  fails any non-finite predicted or diluted concentration.
-- HTML and Markdown reports include the qualified bioanalytical-scientist
-  review disclaimer.
+- `determine_lloq_uloq(...)` and `run_acceptance(...)` require accuracy and
+  precision together for reportable-range and run decisions.
+- `read_plate(...)` reads tidy or matrix CSV/XLSX plate data for 96- and
+  384-well plates.
+- `test_parallelism(...)` and `relative_potency(...)` gate potency reporting on
+  demonstrated parallelism.
+- `screen_cut_point(...)` and `confirm_cut_point(...)` calculate ADA cut points
+  from biological variability.
+- `report_run(...)` writes HTML, Markdown, PDF, or DOCX reports with the
+  qualified bioanalytical-scientist review disclaimer.
+
+The frozen top-level API candidate is documented in `docs/api/reference.md`.
 
 ## Non-Goals
 
@@ -42,4 +53,3 @@ and CLI entry points. See `OPENASSAY_AGENT_LOOP.md` for the future roadmap.
 - No LIMS or plate reader hardware integration.
 - No electronic signature or 21 CFR Part 11 record system.
 - No PK/PD or LC-MS/MS workflows.
-
