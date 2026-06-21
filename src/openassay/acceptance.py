@@ -140,6 +140,8 @@ def run_acceptance(
     passed = True
 
     for res in backcalc_results:
+        if _is_anchor(res):
+            continue
         if not np.isfinite(res.predicted_concentration) or not np.isfinite(
             res.diluted_concentration
         ):

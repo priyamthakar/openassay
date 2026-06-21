@@ -1,6 +1,6 @@
 """openassay exception hierarchy.
 
-openassay never lets a bare openfit or scipy exception escape its public API; it
+openassay never lets a bare lower-level exception escape its public API; it
 wraps them with assay context (which sample, which level, what was attempted)
 while chaining the original via ``raise ... from exc``.
 

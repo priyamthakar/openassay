@@ -106,11 +106,12 @@ What exists on `master` today:
   `openfit.Fit(...).run()`, default `weights="1/y2"`, NaN/Inf rejection, weight
   whitelist validation.
 - `backcalc.Sample`, `BackCalcResult`, `back_calculate(...)` using
-  `scipy.optimize.root_scalar` (brentq) against `fit_result._model.equation`,
-  dilution applied after inversion, below/above LLOQ/ULOQ flags.
+  closed-form 4PL/5PL inverse prediction from public `FitResult.model_id` and
+  `FitResult.params`, dilution applied after inversion, below/above LLOQ/ULOQ
+  flags.
 - `acceptance.AcceptanceResult`, `run_acceptance(...)` (range + non-finite
-  guards; accuracy/precision thresholds are parameters but not yet computed
-  from replicates).
+  guards; per-level %bias/%CV computed from replicate nominal concentrations
+  when supplied).
 - `report.generate_html_report` / `generate_markdown_report` with the
   disclaimer.
 - `cli` (typer, optional) with `version`, `fit-curve`, `backcalc`.
@@ -123,13 +124,8 @@ Gaps vs. the agent loop's **Public API Targets** that this plan will close:
   `read_plate`, `test_parallelism`, `relative_potency`, `screen_cut_point`,
   `confirm_cut_point`, `report_run`) is not yet present; current API is
   class-first (`StandardCurve`) + ad hoc report functions.
-- `backcalc` reaches into `fit_result._model` (a private openfit attribute).
-  This must be replaced with a public inverse-prediction path (see §6.4).
-- `acceptance.run_acceptance` does not yet compute accuracy (%RE/%bias) or
-  precision (%CV) from replicate calibrators/QCs; it only checks range and
-  finiteness.
 - No pydantic models, no `pandas` ingestion layer, no plate model, no
-  `CHANGELOG.md`, `ROADMAP.md`, `examples/`, or CI — all required by the loop.
+  CI — all required by the loop.
 - openfit is not installable in every environment; tests must run against a
   pinned real openfit or a contract-faithful fake (see §10.3).
 
@@ -192,9 +188,7 @@ openassay/
 
 ### 4.1 Dependency tiers
 
-- **Core** (always installed): `openfit`, `numpy`, `pandas`, `pydantic`,
-  `scipy` (used by `backcalc` inversion and stats; add to core deps — it is a
-  hidden dependency today).
+- **Core** (always installed): `openfit`, `numpy`, `pandas`, `pydantic`.
 - **`[cli]`**: `typer`, `rich`.
 - **`[reports]`**: `jinja2` (HTML/MD), `reportlab` (PDF), `python-docx` (DOCX),
   plus a headless plotting path for the curve plot (matplotlib, optional within
@@ -272,7 +266,7 @@ OpenassayError (base)
 └── ReportError            # missing optional report dependency
 ```
 
-Rule: openassay never lets a bare openfit/scipy exception escape its public API;
+Rule: openassay never lets a bare lower-level exception escape its public API;
 it wraps with context (which sample, which level, what was attempted) while
 chaining `from exc`. NaN/Inf always raise `NonFiniteDataError` (a `ValueError`
 subclass, preserving the `CLAUDE.md` "raises `ValueError`" contract).
@@ -348,9 +342,10 @@ tolerance, with ≥2/3 of QC levels and ≥50% per level within tolerance.
 
 ### 6.4 Inverse prediction without private openfit access
 
-The current `backcalc` uses `fit_result._model.equation`. The convergence plan:
+`backcalc` uses public `FitResult.model_id` and `FitResult.params` for inverse
+prediction. The maintenance plan:
 
-1. Prefer a public openfit inverse/predict API if one exists (`predict`,
+1. Prefer a public openfit inverse/predict API if one is added (`predict`,
    `inverse_predict`); record the chosen API in `docs/openfit_api_contract.md`.
 2. Otherwise implement the closed-form 4PL/5PL inverse in openassay (this is
    *assay-curve algebra applied to reported params*, which is in-scope; it does
@@ -362,7 +357,7 @@ The current `backcalc` uses `fit_result._model.equation`. The convergence plan:
    - Guard the domain: `(y−Bottom)/(Top−Bottom) ∈ (0,1)`; outside ⇒
      `InversionError`. Keep brentq as a numeric fallback/cross-check.
 3. Either way, never touch a leading-underscore openfit attribute in shipped
-   code. This is a v0.1.1 cleanup item (§9).
+   code.
 
 ### 6.5 Higher-level functions (later phases)
 
@@ -424,21 +419,20 @@ python -m mypy src/openassay
 plus the phase-specific gates listed below. Commit only after the gate passes;
 never `--no-verify`, never force-push.
 
-### v0.1.0 — Standard Curves, Back-Calc, Acceptance, HTML (DONE, to harden)
+### v0.1.0 — Standard Curves, Back-Calc, Acceptance, HTML (DONE, hardened)
 
 - **Status:** implemented; see §3. Remaining hardening folded into v0.1.1.
-- **Carryover bugs/risks:** private `fit_result._model` access (§6.4);
-  `run_acceptance` not yet computing %CV/%RE; `scipy` undeclared in deps;
-  CLI builds a placeholder `AcceptanceResult` in `fit-curve`.
+- **Carryover bugs/risks:** CLI builds a placeholder `AcceptanceResult` in
+  `fit-curve`.
 
 ### v0.1.1 — Validation Evidence
 
 - **Goal:** prove the v0.1.0 numbers are correct and reproducible; close the
   carryover risks; establish the validation harness.
 - **Work:**
-  - Add `scipy` to core deps; remove private-attribute access via §6.4.
-  - Implement %RE (accuracy = mean recovery − 100) and %CV (precision) in
-    `acceptance` from replicate calibrators/QCs; wire `LevelStats`.
+  - Continue hardening the public inverse path from §6.4.
+  - Extend %RE (accuracy = mean recovery − 100) and %CV (precision) support
+    from replicate nominal concentrations into richer calibrator/QC objects.
   - Add `CHANGELOG.md` (Keep a Changelog), `ROADMAP.md`, `docs/validation.md`,
     `docs/concepts.md`, and `tests/test_invariants.py`.
   - Add `examples/` end-to-end (one CSV in, HTML+MD out).
@@ -605,8 +599,8 @@ Tracked as part of v0.1.1 so the surface stabilizes early:
    `determine_lloq_uloq`, `report_run`) that delegate to existing code;
    keep `StandardCurve` and the `generate_*_report` functions as thin shims
    (deprecate `generate_*_report` in favor of `report_run` with a warning).
-3. Replace `fit_result._model` usage with the §6.4 public/closed-form path.
-4. Compute %RE/%CV in `acceptance`; expand `AcceptanceResult` (additive).
+3. Keep the §6.4 public/closed-form inverse path covered by contract tests.
+4. Continue expanding %RE/%CV acceptance around richer calibrator/QC objects.
 5. Update `__init__.__all__` to the curated target surface; keep old names
    importable until v1.0.0.
 6. Normalize line endings (`.gitattributes` enforcing LF for `*.py`) to stop the
@@ -726,11 +720,8 @@ disclaimer; validation suite documents agreement with references.
 1. Make openfit available (install pinned real openfit, or wire the
    contract-faithful fake + `conftest.py` switch) so the v0.1.0 gate can run.
 2. Add `.gitattributes` (LF) and normalize line endings to kill the CRLF churn.
-3. Add `scipy` to core deps; replace `fit_result._model` with the §6.4 path.
-4. Implement %RE/%CV in `acceptance`; add `tests/test_invariants.py`.
-5. Add `CHANGELOG.md`, `ROADMAP.md`, `docs/validation.md`, `docs/concepts.md`,
-   and `examples/`; tag the hardened result `v0.1.1`.
-6. Then proceed to v0.2.0 (plate layouts) on `agent/openassay-v020`.
+3. Add `docs/validation.md`; tag the hardened result `v0.1.1`.
+4. Then proceed to v0.2.0 (plate layouts) on `agent/openassay-v020`.
 
 > This plan is a living document. Update it at the start and end of each phase so
 > it always reflects the real state of openassay.
