@@ -117,3 +117,28 @@ def test_pdf_missing_dependency_error_is_helpful(monkeypatch, tmp_path) -> None:
 
     with pytest.raises(ReportError, match=r"openassay\[reports\]"):
         generate_pdf_report(result, [], acceptance, str(tmp_path / "report.pdf"))
+
+
+def test_docx_missing_dependency_error_is_helpful(monkeypatch, tmp_path) -> None:
+    """Missing python-docx should raise the same clear ReportError."""
+    result = SimpleNamespace(
+        fit_result=SimpleNamespace(
+            model_id="hill4p",
+            weight_scheme="1/y2",
+            r_squared=0.99,
+            params={},
+            se={},
+        )
+    )
+    acceptance = AcceptanceResult(passed=True, reasons=["ok"])
+    real_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "docx":
+            raise ImportError("missing docx")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    with pytest.raises(ReportError, match=r"openassay\[reports\]"):
+        generate_docx_report(result, [], acceptance, str(tmp_path / "report.docx"))

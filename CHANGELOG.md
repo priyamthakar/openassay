@@ -81,6 +81,7 @@ deprecation shim where practical).
   `report_run` dispatch and missing-dependency `ReportError` guidance.
 - CLI report generation now routes through `report_run`, enabling PDF/DOCX
   report output from existing fit/backcalc commands.
+- Missing optional dependency checks now cover both PDF and DOCX report paths.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
