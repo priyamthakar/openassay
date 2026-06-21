@@ -57,10 +57,14 @@ def test_back_calculation_applies_dilution_after_inverse_prediction() -> None:
         params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
     )
 
-    result = back_calculate(Sample(name="diluted", response=50.0, dilution_factor=10.0), fit_result)
+    result = back_calculate(
+        Sample(name="diluted", response=50.0, dilution_factor=10.0),
+        fit_result,
+        minimum_required_dilution=2.0,
+    )
 
     assert result.predicted_concentration == pytest.approx(10.0)
-    assert result.diluted_concentration == pytest.approx(100.0)
+    assert result.diluted_concentration == pytest.approx(200.0)
 
 
 def test_level_acceptance_requires_accuracy_and_precision() -> None:

@@ -24,6 +24,42 @@ def test_back_calculate_applies_dilution():
     # Predicted should be around 5 (since y=50 is between 20 and 80, x between 1 and 10)
     # Diluted should be predicted * 10
     assert bc_result.diluted_concentration == bc_result.predicted_concentration * 10.0
+    assert bc_result.dilution_factor == 10.0
+    assert bc_result.minimum_required_dilution == 1.0
+
+
+def test_back_calculate_applies_minimum_required_dilution_after_inverse_prediction():
+    """MRD should multiply the on-curve value after inverse prediction."""
+    fit_result = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+    sample = Sample(name="mrd", response=50.0, dilution_factor=2.0)
+
+    result = back_calculate(sample, fit_result, minimum_required_dilution=5.0)
+
+    assert result.predicted_concentration == pytest.approx(10.0)
+    assert result.diluted_concentration == pytest.approx(100.0)
+    assert result.dilution_factor == 2.0
+    assert result.minimum_required_dilution == 5.0
+
+
+def test_back_calculate_rejects_invalid_dilution_factors():
+    """Dilution multipliers must be positive finite values."""
+    fit_result = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+
+    with pytest.raises(ValueError, match="dilution factor"):
+        back_calculate(Sample(name="bad", response=50.0, dilution_factor=0.0), fit_result)
+
+    with pytest.raises(ValueError, match="minimum_required_dilution"):
+        back_calculate(
+            Sample(name="bad-mrd", response=50.0),
+            fit_result,
+            minimum_required_dilution=float("nan"),
+        )
 
 
 def test_back_calculate_uses_public_fit_result_fields_only():
@@ -100,8 +136,8 @@ def test_back_calculate_many_uses_shared_curve_result():
         Sample(name="s2", response=50.0, dilution_factor=10.0),
     ]
 
-    results = back_calculate_many(samples, fit_result)
+    results = back_calculate_many(samples, fit_result, minimum_required_dilution=2.0)
 
     assert [result.sample_name for result in results] == ["s1", "s2"]
-    assert results[0].diluted_concentration == pytest.approx(10.0)
-    assert results[1].diluted_concentration == pytest.approx(100.0)
+    assert results[0].diluted_concentration == pytest.approx(20.0)
+    assert results[1].diluted_concentration == pytest.approx(200.0)

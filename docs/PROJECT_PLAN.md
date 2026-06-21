@@ -475,7 +475,7 @@ never `--no-verify`, never force-push.
 - **Risks:** layout-format ambiguity; mitigate with strict schema validation and
   clear errors rather than guessing.
 
-### v0.3.0 — LLOQ/ULOQ And Dilution
+### v0.3.0 — LLOQ/ULOQ And Dilution (IN PROGRESS)
 
 - **Goal:** decide the validated reportable range and handle dilution properly.
 - **Modules/API:** `range.determine_lloq_uloq`, MRD support in `backcalc`.

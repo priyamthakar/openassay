@@ -29,6 +29,8 @@ class BackCalcResult:
     above_uloq: bool
     lloq: float | None = None
     uloq: float | None = None
+    dilution_factor: float = 1.0
+    minimum_required_dilution: float = 1.0
 
 
 def _inverse_hill_response(response: float, fit_result: FitResult) -> float:
@@ -95,6 +97,7 @@ def back_calculate(
     fit_result: FitResult,
     lloq: float | None = None,
     uloq: float | None = None,
+    minimum_required_dilution: float = 1.0,
 ) -> BackCalcResult:
     """Back-calculate sample concentration from observed response.
 
@@ -121,14 +124,23 @@ def back_calculate(
     """
     if not np.isfinite(sample.response):
         raise ValueError(f"Sample response must be finite, got {sample.response}")
+    if not np.isfinite(sample.dilution_factor) or sample.dilution_factor <= 0.0:
+        raise ValueError(
+            f"Sample dilution factor must be positive and finite, got {sample.dilution_factor}"
+        )
+    if not np.isfinite(minimum_required_dilution) or minimum_required_dilution <= 0.0:
+        raise ValueError(
+            "minimum_required_dilution must be positive and finite, "
+            f"got {minimum_required_dilution}"
+        )
 
     try:
         predicted = _inverse_hill_response(sample.response, fit_result)
     except ValueError as exc:
         raise ValueError(f"Inverse prediction failed for sample {sample.name!r}: {exc}") from exc
 
-    # Apply dilution factor AFTER inverse prediction
-    diluted = predicted * sample.dilution_factor
+    # Apply all dilution factors AFTER inverse prediction.
+    diluted = predicted * minimum_required_dilution * sample.dilution_factor
     if not np.isfinite(diluted):
         raise ValueError(f"Diluted concentration is non-finite for sample {sample.name!r}.")
 
@@ -143,6 +155,8 @@ def back_calculate(
         above_uloq=above_uloq,
         lloq=lloq,
         uloq=uloq,
+        dilution_factor=sample.dilution_factor,
+        minimum_required_dilution=minimum_required_dilution,
     )
 
 
@@ -151,6 +165,16 @@ def back_calculate_many(
     fit_result: FitResult,
     lloq: float | None = None,
     uloq: float | None = None,
+    minimum_required_dilution: float = 1.0,
 ) -> list[BackCalcResult]:
     """Back-calculate many samples with the same fitted curve result."""
-    return [back_calculate(sample, fit_result, lloq=lloq, uloq=uloq) for sample in samples]
+    return [
+        back_calculate(
+            sample,
+            fit_result,
+            lloq=lloq,
+            uloq=uloq,
+            minimum_required_dilution=minimum_required_dilution,
+        )
+        for sample in samples
+    ]
