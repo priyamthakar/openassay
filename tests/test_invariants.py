@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from openassay.acceptance import AcceptanceResult, run_acceptance
+from openassay.ada import screen_cut_point
 from openassay.backcalc import Sample, back_calculate
 from openassay.curve import StandardCurve
 from openassay.potency import relative_potency
@@ -157,6 +158,19 @@ def test_relative_potency_requires_parallelism() -> None:
 
     assert potency.reportable is False
     assert potency.point_estimate is None
+
+
+def test_ada_cut_points_require_biological_variability() -> None:
+    """Invariant 8: ADA cut points refuse single-run biological data."""
+    result = screen_cut_point(
+        [
+            SimpleNamespace(sample_id="donor-1", run_id="run-1", response=100.0),
+            SimpleNamespace(sample_id="donor-2", run_id="run-1", response=105.0),
+        ]
+    )
+
+    assert result.evaluable is False
+    assert result.cut_point is None
 
 
 def test_reports_include_required_disclaimer(tmp_path) -> None:

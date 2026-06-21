@@ -57,6 +57,8 @@ deprecation shim where practical).
   displacement.
 - Project plan updated to mark v0.4.0 complete and route the next phase to ADA
   cut-point workflows.
+- Initial ADA screening and confirmatory cut-point API with parametric and
+  nonparametric methods, plus refusal on insufficient biological variability.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.

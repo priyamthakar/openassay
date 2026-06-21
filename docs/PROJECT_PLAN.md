@@ -523,7 +523,7 @@ never `--no-verify`, never force-push.
 - **Risks:** choice of F-test vs equivalence default; expose both, document the
   trade-off, default to the more conservative reportability.
 
-### v0.5.0 — ADA Cut Points
+### v0.5.0 — ADA Cut Points (IN PROGRESS)
 
 - **Goal:** screening and confirmatory cut points for anti-drug-antibody assays.
 - **Modules/API:** `ada.screen_cut_point`, `ada.confirm_cut_point`, `ADAResult`.
