@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import numpy as np
@@ -143,3 +144,13 @@ def back_calculate(
         lloq=lloq,
         uloq=uloq,
     )
+
+
+def back_calculate_many(
+    samples: Iterable[Sample],
+    fit_result: FitResult,
+    lloq: float | None = None,
+    uloq: float | None = None,
+) -> list[BackCalcResult]:
+    """Back-calculate many samples with the same fitted curve result."""
+    return [back_calculate(sample, fit_result, lloq=lloq, uloq=uloq) for sample in samples]

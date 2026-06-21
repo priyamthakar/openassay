@@ -21,6 +21,8 @@ deprecation shim where practical).
 - End-to-end CSV examples for standard-curve fitting and sample back-calculation.
 - Closed-form 4PL/5PL back-calculation using public `FitResult.model_id` and
   `FitResult.params` instead of private openfit attributes.
+- Functional API wrappers: `fit_standard_curve`, `back_calculate_many`, and
+  `report_run`.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

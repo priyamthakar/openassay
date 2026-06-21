@@ -120,10 +120,10 @@ What exists on `master` today:
 
 Gaps vs. the agent loop's **Public API Targets** that this plan will close:
 
-- Target functional API (`fit_standard_curve`, `determine_lloq_uloq`,
-  `read_plate`, `test_parallelism`, `relative_potency`, `screen_cut_point`,
-  `confirm_cut_point`, `report_run`) is not yet present; current API is
-  class-first (`StandardCurve`) + ad hoc report functions.
+- Remaining target functional API (`determine_lloq_uloq`, `read_plate`,
+  `test_parallelism`, `relative_potency`, `screen_cut_point`,
+  `confirm_cut_point`) is not yet present. Current wrappers include
+  `fit_standard_curve`, `back_calculate_many`, and `report_run`.
 - No pydantic models, no `pandas` ingestion layer, no plate model, no
   CI — all required by the loop.
 - openfit is not installable in every environment; tests must run against a

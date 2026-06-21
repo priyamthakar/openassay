@@ -5,15 +5,20 @@ from __future__ import annotations
 __version__ = "0.1.0"
 
 from openassay.acceptance import AcceptanceResult, LevelStats, run_acceptance
-from openassay.backcalc import Sample, back_calculate
-from openassay.curve import CalibrationResult, StandardCurve
+from openassay.backcalc import BackCalcResult, Sample, back_calculate, back_calculate_many
+from openassay.curve import CalibrationResult, StandardCurve, fit_standard_curve
+from openassay.report import report_run
 
 __all__ = [
-    "CalibrationResult",
-    "StandardCurve",
-    "Sample",
-    "back_calculate",
     "AcceptanceResult",
+    "BackCalcResult",
+    "CalibrationResult",
     "LevelStats",
+    "Sample",
+    "StandardCurve",
+    "back_calculate",
+    "back_calculate_many",
+    "fit_standard_curve",
+    "report_run",
     "run_acceptance",
 ]

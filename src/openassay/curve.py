@@ -86,3 +86,22 @@ class StandardCurve:
     def fit_result(self) -> FitResult | None:
         """Return the underlying FitResult if fitted."""
         return self._fit_result
+
+
+def fit_standard_curve(
+    x: Any,
+    y: Any,
+    *,
+    model: str = "hill4p",
+    weights: str = "1/y2",
+    lloq: float | None = None,
+    uloq: float | None = None,
+    **fit_kwargs: Any,
+) -> CalibrationResult:
+    """Fit a standard curve through openfit and return a calibration result."""
+    result = StandardCurve(x, y, model=model, weights=weights, **fit_kwargs).fit()
+    result.lloq = lloq
+    result.uloq = uloq
+    if lloq is not None and uloq is not None:
+        result.reportable_range = (lloq, uloq)
+    return result

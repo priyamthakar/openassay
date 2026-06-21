@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from openassay.backcalc import Sample, back_calculate
+from openassay.backcalc import Sample, back_calculate, back_calculate_many
 from openassay.curve import StandardCurve
 
 
@@ -87,3 +87,21 @@ def test_back_calculate_flags_lloq_uloq():
     sample_high = Sample(name="high", response=95.0, dilution_factor=1.0)
     bc_high = back_calculate(sample_high, result.fit_result, lloq=0.5, uloq=90.0)
     assert bc_high.above_uloq is True
+
+
+def test_back_calculate_many_uses_shared_curve_result():
+    """Functional batch helper should preserve input order."""
+    fit_result = SimpleNamespace(
+        model_id="hill4p",
+        params={"Bottom": 0.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+    )
+    samples = [
+        Sample(name="s1", response=50.0, dilution_factor=1.0),
+        Sample(name="s2", response=50.0, dilution_factor=10.0),
+    ]
+
+    results = back_calculate_many(samples, fit_result)
+
+    assert [result.sample_name for result in results] == ["s1", "s2"]
+    assert results[0].diluted_concentration == pytest.approx(10.0)
+    assert results[1].diluted_concentration == pytest.approx(100.0)

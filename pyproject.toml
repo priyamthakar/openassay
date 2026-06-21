@@ -74,7 +74,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 # openfit is the external fitting engine. A nested checkout may be present for
 # API inspection, but openassay's strict mypy gate should not type-check openfit.
-module = ["openfit", "openfit.*"]
+module = ["openfit"]
 follow_imports = "skip"
 
 [tool.pytest.ini_options]

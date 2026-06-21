@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 DISCLAIMER = (
@@ -147,3 +148,27 @@ def generate_markdown_report(
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(md_content)
+
+
+def report_run(
+    curve_result: Any,
+    backcalc_results: list[Any],
+    acceptance_result: Any,
+    path: str | Path,
+    *,
+    format: str = "auto",
+) -> Path:
+    """Generate a run report and return the output path."""
+    output_path = Path(path)
+    report_format = output_path.suffix.lower().lstrip(".") if format == "auto" else format.lower()
+
+    if report_format in {"html", "htm"}:
+        generate_html_report(curve_result, backcalc_results, acceptance_result, str(output_path))
+    elif report_format in {"md", "markdown"}:
+        generate_markdown_report(
+            curve_result, backcalc_results, acceptance_result, str(output_path)
+        )
+    else:
+        raise ValueError("format must be 'auto', 'html', or 'markdown'")
+
+    return output_path
