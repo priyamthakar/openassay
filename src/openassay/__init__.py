@@ -7,6 +7,13 @@ __version__ = "0.1.0"
 from openassay.acceptance import AcceptanceResult, LevelStats, run_acceptance
 from openassay.ada import ADAResult, confirm_cut_point, screen_cut_point
 from openassay.backcalc import BackCalcResult, Sample, back_calculate, back_calculate_many
+from openassay.batch import (
+    BatchCollapsedReplicate,
+    BatchItemResult,
+    BatchResult,
+    aggregate_collapsed_replicates,
+    run_batch,
+)
 from openassay.curve import CalibrationResult, StandardCurve, fit_standard_curve
 from openassay.ingest import read_plate
 from openassay.parallelism import ParallelismResult, test_parallelism
@@ -19,6 +26,9 @@ __all__ = [
     "AcceptanceResult",
     "ADAResult",
     "BackCalcResult",
+    "BatchCollapsedReplicate",
+    "BatchItemResult",
+    "BatchResult",
     "CalibrationResult",
     "LevelStats",
     "RangeResult",
@@ -33,12 +43,14 @@ __all__ = [
     "Well",
     "back_calculate",
     "back_calculate_many",
+    "aggregate_collapsed_replicates",
     "confirm_cut_point",
     "fit_standard_curve",
     "determine_lloq_uloq",
     "relative_potency",
     "read_plate",
     "report_run",
+    "run_batch",
     "run_acceptance",
     "screen_cut_point",
     "test_parallelism",

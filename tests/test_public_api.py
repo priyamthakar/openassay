@@ -10,6 +10,7 @@ def test_public_functional_api_exports() -> None:
     assert callable(oa.fit_standard_curve)
     assert callable(oa.back_calculate)
     assert callable(oa.back_calculate_many)
+    assert callable(oa.aggregate_collapsed_replicates)
     assert callable(oa.confirm_cut_point)
     assert callable(oa.determine_lloq_uloq)
     assert callable(oa.relative_potency)
@@ -18,3 +19,4 @@ def test_public_functional_api_exports() -> None:
     assert callable(oa.screen_cut_point)
     assert callable(oa.test_parallelism)
     assert callable(oa.report_run)
+    assert callable(oa.run_batch)

@@ -73,6 +73,8 @@ deprecation shim where practical).
   384-well and batch-processing work.
 - Explicit 384-well plate parsing for tidy and matrix inputs while preserving
   96-well defaults.
+- Batch helpers for partial-failure processing and multi-plate collapsed
+  replicate aggregation.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
