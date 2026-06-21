@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>openassay · openfit — open-source bioanalysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+.ofa{
+  --canvas:#ffffff;--canvas-soft:#f7f8f9;--canvas-sunken:#f0f2f4;
+  --ink:#14181c;--ink-secondary:#3b424a;--ink-muted:#6b7280;--ink-faint:#9aa3ad;
+  --hairline:#e6e8eb;--hairline-strong:#d7dbdf;
+  --fit:#5457d6;--fit-deep:#4143b0;--fit-soft:#ebebfb;
+  --assay:#0d9488;--assay-deep:#0f766e;--assay-soft:#d7f4f0;
+  --ok:#15803d;--ok-soft:#dcfce7;--warn:#b45309;--warn-soft:#fef3c7;
+  --fail:#b91c1c;--fail-soft:#fee2e2;--info:#1d4ed8;--info-soft:#dbeafe;
+  --l1:0 1px 2px rgba(16,24,40,.06);--l2:0 8px 24px rgba(16,24,40,.08);--l3:0 20px 48px rgba(16,24,40,.12);
+  background:var(--canvas);color:var(--ink);
+  font-family:'Inter',-apple-system,system-ui,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.6;min-height:100vh
+}
+.ofa[data-theme="dark"]{
+  --canvas:#0b0e11;--canvas-soft:#11161b;--canvas-sunken:#161c22;
+  --ink:#eef1f4;--ink-secondary:#c2c9d1;--ink-muted:#8a929c;--ink-faint:#5c656f;
+  --hairline:rgba(255,255,255,.08);--hairline-strong:rgba(255,255,255,.14);
+  --fit-soft:rgba(84,87,214,.18);--assay-soft:rgba(13,148,136,.20);
+  --ok-soft:rgba(21,128,61,.18);--warn-soft:rgba(180,83,9,.20);
+  --fail-soft:rgba(185,28,28,.20);--info-soft:rgba(29,78,216,.20);
+  --l1:0 1px 2px rgba(0,0,0,.4);--l2:0 8px 24px rgba(0,0,0,.5);--l3:0 20px 48px rgba(0,0,0,.6)
+}
+.ofa *{box-sizing:border-box}
+.ofa button{font:inherit;cursor:pointer;color:inherit;background:none;border:none}
+.ofa a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+.ofa button:focus-visible,.ofa a:focus-visible{outline:2px solid var(--fit);outline-offset:2px;border-radius:6px}
+.lift{transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease}
+.lift:hover{box-shadow:var(--l2)!important;border-color:var(--hairline-strong)!important}
+@keyframes dashfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+pre{white-space:pre;overflow-x:auto}
+</style>
+</head>
+<body>
+<div id="app" class="ofa">
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header style="position:sticky;top:0;z-index:50;background:var(--canvas);border-bottom:1px solid var(--hairline)">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:24px">
+
+    <button id="logo-btn" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span style="width:26px;height:26px;border-radius:7px;background:var(--fit);position:relative;display:inline-block;flex-shrink:0">
+        <span style="position:absolute;top:7px;right:7px;width:12px;height:12px;border-radius:4px;background:var(--assay);box-shadow:0 0 0 2px var(--canvas)"></span>
+      </span>
+      <span style="font-weight:600;font-size:16px;letter-spacing:-.3px">openassay<span style="color:var(--ink-faint);font-weight:500">/</span><span style="color:var(--ink-muted);font-weight:500">openfit</span></span>
+    </button>
+
+    <div style="display:flex;border:1px solid var(--hairline-strong);border-radius:9999px;padding:3px;background:var(--canvas-soft);flex-shrink:0">
+      <button id="tab-fit" style="padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;color:var(--ink-muted)">openfit</button>
+      <button id="tab-assay" style="padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;background:var(--canvas);color:var(--assay);box-shadow:var(--l1)">openassay</button>
+    </div>
+
+    <nav style="margin-left:auto;display:flex;align-items:center;gap:4px" aria-label="Primary">
+      <button id="nav-home" style="padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;background:var(--canvas-sunken);color:var(--ink)">Home</button>
+      <button id="nav-docs" style="padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink-secondary)">Docs</button>
+      <button id="nav-dash" style="padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink-secondary)">Dashboard</button>
+      <a href="#" style="padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink-secondary)">Validation</a>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--hairline-strong);border-radius:8px;font-size:13px;font-weight:500;margin-left:4px;flex-shrink:0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17 4.6 18 4.9 18 4.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        <span>GitHub</span>
+        <span class="mono" style="color:var(--ink-muted);border-left:1px solid var(--hairline);padding-left:7px">★ 2.4k</span>
+      </div>
+      <div class="mono" style="display:flex;align-items:center;gap:3px;padding:6px 8px;border:1px solid var(--hairline);border-radius:7px;font-size:11px;color:var(--ink-muted);flex-shrink:0">
+        <span style="border:1px solid var(--hairline-strong);border-radius:4px;padding:0 4px">⌘</span>K
+      </div>
+      <button id="theme-btn" aria-label="Toggle dark mode" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--hairline-strong);border-radius:8px;margin-left:4px;flex-shrink:0">
+        <svg id="theme-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<main id="page-home">
+
+  <!-- HERO -->
+  <section style="max-width:1200px;margin:0 auto;padding:96px 24px 64px;display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center">
+    <div>
+      <div class="mono" style="font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--assay-deep);margin-bottom:18px">Open-source bioanalysis · raw curve → run report</div>
+      <h1 style="font-size:60px;line-height:1.05;letter-spacing:-1.6px;font-weight:600;margin:0 0 20px">From plate to <span style="color:var(--assay)">decision</span>,<br>on math you can <span style="color:var(--fit)">audit</span>.</h1>
+      <p style="font-size:18px;line-height:1.6;color:var(--ink-secondary);max-width:520px;margin:0 0 28px"><strong style="color:var(--ink);font-weight:600">openassay</strong> runs the assay-domain decisions — calibrators, QC, LLOQ/ULOQ, dilution, reports. It calls <strong style="color:var(--ink);font-weight:600">openfit</strong> for every fit and statistic. Two layers, one clean boundary.</p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px">
+        <button id="hero-get-started" style="background:var(--assay);color:#fff;font-weight:500;font-size:15px;padding:11px 20px;border-radius:8px;box-shadow:var(--l1)">Get started</button>
+        <button style="border:1px solid var(--hairline-strong);font-weight:500;font-size:15px;padding:11px 18px;border-radius:8px;display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17 4.6 18 4.9 18 4.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          View on GitHub
+        </button>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:10px;background:var(--canvas-sunken);border:1px solid var(--hairline);border-radius:10px;padding:9px 9px 9px 14px">
+        <span class="mono" style="font-size:14px;color:var(--ink-secondary)"><span style="color:var(--ink-faint)">$</span> pip install openassay</span>
+        <button class="copy-btn mono" data-text="pip install openassay" style="font-size:12px;font-weight:500;background:var(--canvas);border:1px solid var(--hairline-strong);border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="position:relative;height:440px;animation:dashfloat 7s ease-in-out infinite">
+      <div style="position:absolute;top:0;left:0;width:340px;background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;box-shadow:var(--l2);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:600">Standard curve · 4PL</span>
+          <span class="mono" style="font-size:11px;color:var(--fit);background:var(--fit-soft);padding:2px 7px;border-radius:9999px">1/y² weighted</span>
+        </div>
+        <div class="svg-wrap-hero-curve"></div>
+        <div class="mono" style="font-size:11px;color:var(--ink-muted);display:flex;gap:14px;margin-top:4px"><span>EC50 18.5</span><span>R² 0.9994</span></div>
+      </div>
+      <div style="position:absolute;bottom:0;right:0;width:268px;background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;box-shadow:var(--l3);padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">Plate 01 · 96-well</div>
+        <div class="svg-wrap-plate"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <section style="border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:var(--canvas-soft)">
+    <div style="max-width:1200px;margin:0 auto;padding:18px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;color:var(--ink-muted);font-size:13px">
+      <span style="font-weight:500">Designed around</span>
+      <span class="mono" style="background:var(--canvas);border:1px solid var(--hairline);padding:4px 10px;border-radius:9999px">FDA BMV 2018</span>
+      <span class="mono" style="background:var(--canvas);border:1px solid var(--hairline);padding:4px 10px;border-radius:9999px">ICH M10 (2022)</span>
+      <span class="mono" style="background:var(--canvas);border:1px solid var(--hairline);padding:4px 10px;border-radius:9999px">USP &lt;1032&gt;/&lt;1034&gt;</span>
+      <span class="mono" style="background:var(--canvas);border:1px solid var(--hairline);padding:4px 10px;border-radius:9999px">Immunogenicity guidance</span>
+    </div>
+  </section>
+
+  <!-- THE STACK -->
+  <section style="max-width:1080px;margin:0 auto;padding:96px 24px;text-align:center">
+    <div class="mono" style="font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px">The stack</div>
+    <h2 style="font-size:44px;line-height:1.08;letter-spacing:-1px;font-weight:600;margin:0 0 14px">Two packages. One clean boundary.</h2>
+    <p style="font-size:18px;color:var(--ink-secondary);max-width:600px;margin:0 auto 48px">openassay makes the decisions. openfit does the math. Reproducible results, no overlap.</p>
+    <div style="max-width:760px;margin:0 auto">
+      <div style="background:var(--assay-soft);border:1px solid var(--assay);border-radius:16px 16px 6px 6px;padding:26px 28px;text-align:left">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span class="mono" style="font-weight:600;font-size:16px;color:var(--assay-deep)">openassay</span>
+          <span style="font-size:13px;color:var(--ink-muted)">— assay-domain decisions</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">plate / CSV ingestion</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">standard curves</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">back-calculation</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">LLOQ / ULOQ</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">calibrator &amp; QC acceptance</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">parallelism &amp; potency</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">ADA cut points</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">run reports</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:8px;color:var(--ink-faint);padding:8px 0;font-size:12px" class="mono">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg> calls
+      </div>
+      <div style="background:var(--fit-soft);border:1px solid var(--fit);border-radius:6px 6px 16px 16px;padding:26px 28px;text-align:left">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span class="mono" style="font-weight:600;font-size:16px;color:var(--fit)">openfit</span>
+          <span style="font-size:13px;color:var(--ink-muted)">— fitting &amp; statistics</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">4PL / 5PL</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">weighted least squares</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">covariance &amp; CIs</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);border-radius:7px;padding:6px 10px">FitSpec manifest</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPENFIT BAND -->
+  <section style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+    <div style="max-width:1200px;margin:0 auto;padding:96px 24px">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
+        <span class="mono" style="font-size:13px;font-weight:600;color:var(--fit);background:var(--fit-soft);padding:4px 10px;border-radius:9999px">openfit</span>
+        <span style="color:var(--ink-muted);font-size:14px">Engine Indigo</span>
+      </div>
+      <h2 style="font-size:32px;letter-spacing:-.5px;font-weight:600;margin:0 0 36px">Trustworthy regression, exposed end to end.</h2>
+      <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+            <div style="width:34px;height:34px;border-radius:9px;background:var(--fit-soft);color:var(--fit);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16c2-7 4-9 7-9s3 3 7 3"/></svg>
+            </div>
+            <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">4PL / 5PL &amp; weighting</h3>
+            <p style="font-size:14px;color:var(--ink-secondary);margin:0">Nonlinear models with 1/y, 1/y², or custom weights. Robust starts, bounded optimization.</p>
+          </div>
+          <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+            <div style="width:34px;height:34px;border-radius:9px;background:var(--fit-soft);color:var(--fit);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8M10 20V4M16 20v-7M20 20v-3"/></svg>
+            </div>
+            <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">Covariance &amp; CIs</h3>
+            <p style="font-size:14px;color:var(--ink-secondary);margin:0">Full parameter covariance, standard errors, and confidence intervals on every estimate.</p>
+          </div>
+          <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+            <div style="width:34px;height:34px;border-radius:9px;background:var(--fit-soft);color:var(--fit);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </div>
+            <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">FitSpec reproducibility</h3>
+            <p style="font-size:14px;color:var(--ink-secondary);margin:0">Every fit serializes to a manifest: versions, input digests, model, seed. Re-run anywhere.</p>
+          </div>
+          <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+            <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:var(--ink-muted)">Weighted residuals</h3>
+            <div class="svg-wrap-residuals"></div>
+          </div>
+        </div>
+        <div style="background:#0d1117;border:1px solid var(--hairline-strong);border-radius:10px;overflow:hidden;box-shadow:var(--l2)">
+          <div style="display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+            <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;flex-shrink:0"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;flex-shrink:0"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#28c840;flex-shrink:0"></span>
+            <span class="mono" style="font-size:11px;color:#8a929c;margin-left:6px">fit_4pl.py</span>
+          </div>
+          <pre class="mono" style="margin:0;padding:18px;font-size:13px;line-height:1.7;color:#c2c9d1">import openfit as of
+
+spec = of.FitSpec(
+    model="4PL",
+    weights="1/y^2",
+    x=conc, y=signal,
+)
+fit = of.Fit(spec).run()
+
+fit.params["EC50"]     # 18.50 ± 0.62
+fit.r_squared          # 0.9994
+fit.confint("EC50")    # (17.3, 19.7)</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPENASSAY BAND -->
+  <section>
+    <div style="max-width:1200px;margin:0 auto;padding:96px 24px">
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
+        <span class="mono" style="font-size:13px;font-weight:600;color:var(--assay-deep);background:var(--assay-soft);padding:4px 10px;border-radius:9999px">openassay</span>
+        <span style="color:var(--ink-muted);font-size:14px">Assay Teal</span>
+      </div>
+      <h2 style="font-size:32px;letter-spacing:-.5px;font-weight:600;margin:0 0 36px">From wells to a reportable result.</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">Plate ingestion</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Read plate maps and CSV exports; assign roles to every well automatically.</p>
+        </div>
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">Back-calculation</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Invert the curve with dilution factors; report concentrations with range flags.</p>
+        </div>
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M7 8l-3 4 3 4M17 8l3 4-3 4"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">LLOQ / ULOQ &amp; range</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Establish the reportable range and flag samples outside it automatically.</p>
+        </div>
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18c5-12 11-12 16 0M4 14c5-9 11-9 16 0"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">Parallelism &amp; potency</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Compare sample dilution curves to reference; relative potency with CIs.</p>
+        </div>
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 8v8l7 5 7-5V8"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">ADA cut points</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Screening and confirmatory cut points for immunogenicity assays.</p>
+        </div>
+        <div class="lift" style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:24px;box-shadow:var(--l1)">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5M7 3h8l5 5v13H7z"/><path d="M9 13h6M9 17h6"/></svg>
+          </div>
+          <h3 style="font-size:19px;font-weight:600;letter-spacing:-.2px;margin:0 0 8px">Run reports</h3>
+          <p style="font-size:14px;color:var(--ink-secondary);margin:0">Regulatory-style HTML/PDF reports with the full audit trail and disclaimer.</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch">
+        <div style="background:#0d1117;border:1px solid var(--hairline-strong);border-radius:10px;overflow:hidden;box-shadow:var(--l2)">
+          <div style="display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+            <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;flex-shrink:0"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;flex-shrink:0"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#28c840;flex-shrink:0"></span>
+            <span class="mono" style="font-size:11px;color:#8a929c;margin-left:6px">run_assay.py</span>
+          </div>
+          <pre class="mono" style="margin:0;padding:18px;font-size:13px;line-height:1.7;color:#c2c9d1">import openassay as oa
+
+plate = oa.read_plate("run148.csv")
+curve = oa.fit_standard_curve(
+    plate, model="4PL", weights="1/y^2",
+)   # delegates to openfit
+
+result = oa.back_calculate(
+    plate.unknowns, curve,
+    dilution=plate.dilutions,
+)
+result.flag_range(curve.lloq, curve.uloq)</pre>
+        </div>
+        <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;box-shadow:var(--l1);overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--hairline);font-size:14px;font-weight:600">Back-calculated samples</div>
+          <div id="backcalc-mini"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT PREVIEW -->
+  <section style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+    <div style="max-width:1200px;margin:0 auto;padding:96px 24px;text-align:center">
+      <div class="mono" style="font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px">See it work</div>
+      <h2 style="font-size:44px;letter-spacing:-1px;font-weight:600;margin:0 0 14px">The openassay dashboard.</h2>
+      <p style="font-size:18px;color:var(--ink-secondary);max-width:560px;margin:0 auto 36px">Standard curve, plate, back-calculation, and acceptance — one run, one decision.</p>
+      <button id="preview-dash-btn" class="lift" style="display:block;width:100%;max-width:980px;margin:0 auto;background:var(--canvas);border:1px solid var(--hairline-strong);border-radius:16px;box-shadow:var(--l2);padding:0;overflow:hidden;text-align:left">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hairline);background:var(--canvas-sunken)">
+          <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span>
+          <span class="mono" style="font-size:12px;color:var(--ink-muted);margin-left:8px">openassay — RUN-2026-0148</span>
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ok);background:var(--ok-soft);padding:3px 9px;border-radius:9999px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>Accepted
+          </span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px;padding:22px">
+          <div style="border:1px solid var(--hairline);border-radius:10px;padding:14px"><div class="svg-wrap-preview-curve"></div></div>
+          <div style="border:1px solid var(--hairline);border-radius:10px;padding:14px">
+            <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px">Plate 01</div>
+            <div class="svg-wrap-plate"></div>
+          </div>
+        </div>
+        <div style="padding:0 22px 22px;text-align:center">
+          <span style="color:var(--assay-deep);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px">Open the live demo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- BOUNDARY TABLE -->
+  <section style="max-width:1080px;margin:0 auto;padding:96px 24px">
+    <div class="mono" style="font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px;text-align:center">The boundary</div>
+    <h2 style="font-size:32px;letter-spacing:-.5px;font-weight:600;margin:0 0 36px;text-align:center">Who owns what. No overlap.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--hairline);border-radius:14px;overflow:hidden">
+      <div style="border-right:1px solid var(--hairline)">
+        <div style="padding:18px 24px;background:var(--fit-soft);border-bottom:1px solid var(--hairline)"><span class="mono" style="font-weight:600;color:var(--fit)">openfit</span> <span style="color:var(--ink-muted);font-size:14px">— the engine</span></div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--fit);flex-shrink:0">●</span>4PL / 5PL model fitting</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--fit);flex-shrink:0">●</span>Weighted least squares</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--fit);flex-shrink:0">●</span>Parameter covariance &amp; SE</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--fit);flex-shrink:0">●</span>Confidence &amp; prediction intervals</div>
+        <div style="padding:13px 24px;font-size:14px;display:flex;gap:10px"><span style="color:var(--fit);flex-shrink:0">●</span>FitSpec manifest + provenance</div>
+      </div>
+      <div>
+        <div style="padding:18px 24px;background:var(--assay-soft);border-bottom:1px solid var(--hairline)"><span class="mono" style="font-weight:600;color:var(--assay-deep)">openassay</span> <span style="color:var(--ink-muted);font-size:14px">— the product</span></div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>Plate &amp; CSV ingestion</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>Calibrator &amp; QC acceptance</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>LLOQ / ULOQ &amp; reportable range</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>Back-calculation with dilution</div>
+        <div style="padding:13px 24px;border-bottom:1px solid var(--hairline);font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>Parallelism, potency, ADA cut points</div>
+        <div style="padding:13px 24px;font-size:14px;display:flex;gap:10px"><span style="color:var(--assay);flex-shrink:0">●</span>Regulatory-style run reports</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION -->
+  <section style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+    <div style="max-width:1080px;margin:0 auto;padding:96px 24px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+      <div>
+        <div class="mono" style="font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px">Validation &amp; compliance</div>
+        <h2 style="font-size:32px;letter-spacing:-.5px;font-weight:600;margin:0 0 16px">Reproducible by construction.</h2>
+        <p style="font-size:16px;color:var(--ink-secondary);margin:0 0 18px">Every fit emits a <span class="mono" style="font-size:14px;color:var(--ink)">FitSpec</span> manifest: package versions, input digests, model, weighting, and seed. Re-run it anywhere; get the same numbers.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);padding:5px 11px;border-radius:9999px">FDA BMV 2018</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);padding:5px 11px;border-radius:9999px">ICH M10</span>
+          <span class="mono" style="font-size:12px;background:var(--canvas);border:1px solid var(--hairline);padding:5px 11px;border-radius:9999px">USP &lt;1032&gt;/&lt;1034&gt;</span>
+        </div>
+      </div>
+      <div style="background:var(--info-soft);border:1px solid var(--info);border-radius:12px;padding:22px;display:flex;gap:14px;align-items:flex-start">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.9" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1" stroke-linecap="round"/></svg>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:var(--ink-secondary)"><strong style="color:var(--ink)">Review disclaimer.</strong> This report was generated using openassay (open-source). Final acceptance decisions and regulatory interpretation should be reviewed by qualified bioanalytical scientists.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OSS CTA -->
+  <section style="max-width:1080px;margin:0 auto;padding:96px 24px;text-align:center">
+    <h2 style="font-size:44px;letter-spacing:-1px;font-weight:600;margin:0 0 14px">Install it. Read the source.</h2>
+    <p style="font-size:18px;color:var(--ink-secondary);margin:0 0 28px">MIT licensed. Built in the open.</p>
+    <div style="display:inline-flex;align-items:center;gap:10px;background:var(--canvas-sunken);border:1px solid var(--hairline);border-radius:10px;padding:11px 11px 11px 16px;margin-bottom:20px">
+      <span class="mono" style="font-size:15px;color:var(--ink-secondary)"><span style="color:var(--ink-faint)">$</span> pip install openassay</span>
+      <button class="copy-btn mono" data-text="pip install openassay" style="font-size:12px;font-weight:500;background:var(--canvas);border:1px solid var(--hairline-strong);border-radius:7px;padding:7px 11px"><span class="copy-label">Copy</span></button>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button style="background:var(--assay);color:#fff;font-weight:500;padding:11px 20px;border-radius:8px">Contribute</button>
+      <button style="border:1px solid var(--hairline-strong);font-weight:500;padding:11px 18px;border-radius:8px">Roadmap</button>
+      <span class="mono" style="display:inline-flex;align-items:center;font-size:13px;color:var(--ink-muted);padding:11px 4px">★ 2.4k on GitHub</span>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="border-top:1px solid var(--hairline);background:var(--canvas-soft)">
+    <div style="max-width:1200px;margin:0 auto;padding:56px 24px 40px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:32px">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <span style="width:24px;height:24px;border-radius:6px;background:var(--fit);position:relative;display:inline-block;flex-shrink:0"><span style="position:absolute;top:6px;right:6px;width:11px;height:11px;border-radius:3px;background:var(--assay);box-shadow:0 0 0 2px var(--canvas-soft)"></span></span>
+          <span style="font-weight:600;letter-spacing:-.3px;font-size:15px">openassay/openfit</span>
+        </div>
+        <p style="font-size:13px;color:var(--ink-muted);margin:0 0 14px;max-width:240px">Open-source bioanalysis, from raw curve to run report.</p>
+        <span class="mono" style="font-size:12px;color:var(--ink-faint)">MIT licensed · v0.8.2</span>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Product</div>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Overview</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Dashboard</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Changelog</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Roadmap</a>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">openfit</div>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Curve fitting</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Statistics</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">FitSpec</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">API</a>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">openassay</div>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Plates</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Acceptance</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Reports</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">API</a>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Docs</div>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Quickstart</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Concepts</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Examples</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Reference</a>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Community</div>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">GitHub</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Discussions</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">Contributing</a>
+        <a href="#" style="display:block;font-size:13px;color:var(--ink-muted);padding:4px 0">License</a>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="page-dashboard" style="display:none;height:calc(100vh - 64px);overflow:hidden">
+  <div style="display:flex;height:100%">
+
+    <!-- sidebar -->
+    <nav style="width:200px;flex-shrink:0;border-right:1px solid var(--hairline);background:var(--canvas-soft);padding:20px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;padding:6px 10px;margin-bottom:4px">openassay</div>
+      <a href="#" class="dash-nav-item active" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;background:var(--assay-soft);color:var(--assay-deep)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Runs
+      </a>
+      <a href="#" class="dash-nav-item" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink-secondary)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>Plates
+      </a>
+      <a href="#" class="dash-nav-item" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink-secondary)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 3v18h18M7 16c2-7 4-9 7-9s3 3 7 3"/></svg>Standard curves
+      </a>
+      <a href="#" class="dash-nav-item" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink-secondary)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Samples
+      </a>
+      <a href="#" class="dash-nav-item" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink-secondary)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 13l4 4L19 7"/></svg>Acceptance
+      </a>
+      <a href="#" class="dash-nav-item" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--ink-secondary)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M7 3h8l5 5v13H7z"/></svg>Reports
+      </a>
+    </nav>
+
+    <!-- main content -->
+    <div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px;background:var(--canvas-sunken)">
+
+      <!-- top bar -->
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:18px;font-weight:600;letter-spacing:-.3px">RUN-2026-0148</div>
+          <div style="font-size:13px;color:var(--ink-muted)">Analyst: M. Okonkwo · Reportable range: 0.625–640 ng/mL</div>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ok);background:var(--ok-soft);padding:5px 12px;border-radius:9999px;margin-left:auto">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>Run accepted
+        </span>
+        <span class="mono" style="font-size:12px;color:var(--ink-faint)">openassay v0.8.2</span>
+      </div>
+
+      <!-- curve + plate row -->
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px">
+        <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:18px;box-shadow:var(--l1)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:14px;font-weight:600">Standard curve · 4PL</div>
+            <span class="mono" style="font-size:11px;color:var(--fit);background:var(--fit-soft);padding:2px 7px;border-radius:9999px">1/y² weighted</span>
+          </div>
+          <div class="svg-wrap-dash-curve"></div>
+          <div style="margin-top:14px"><div id="param-table"></div></div>
+        </div>
+        <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:18px;box-shadow:var(--l1)">
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px">Plate 01 · 96-well</div>
+          <div id="plate-panel" style="position:relative">
+            <div class="svg-wrap-dash-plate" style="cursor:crosshair"></div>
+            <div id="well-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--canvas);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;white-space:nowrap;z-index:10"></div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+            <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(29,78,216,.55);display:inline-block"></span>Standard</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(13,148,136,.7);display:inline-block"></span>QC</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(107,114,128,.28);display:inline-block"></span>Unknown</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(154,163,173,.18);display:inline-block"></span>Blank</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- backcalc + acceptance row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;box-shadow:var(--l1)">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--hairline);font-size:14px;font-weight:600">Back-calculated samples</div>
+          <div id="backcalc-full" style="overflow-x:auto"></div>
+        </div>
+        <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;box-shadow:var(--l1)">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--hairline);font-size:14px;font-weight:600">Calibrator &amp; QC acceptance</div>
+          <div id="acceptance-table-dash" style="overflow-x:auto"></div>
+        </div>
+      </div>
+
+      <!-- run report card -->
+      <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:12px;padding:20px 24px;box-shadow:var(--l1);display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--assay-soft);color:var(--assay-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M7 3h8l5 5v13H7z"/><path d="M9 13h6M9 17h6"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px">Run report · RUN-2026-0148</div>
+          <div style="font-size:13px;color:var(--ink-muted)">Generated 2026-01-48 · includes disclaimer · openassay v0.8.2</div>
+        </div>
+        <button style="background:var(--assay);color:#fff;font-weight:500;padding:9px 16px;border-radius:8px;font-size:14px;flex-shrink:0">Download PDF</button>
+        <button style="border:1px solid var(--hairline-strong);font-weight:500;padding:9px 16px;border-radius:8px;font-size:14px;flex-shrink:0">View HTML</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DOCS ═══════════════ -->
+<div id="page-docs" style="display:none">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:220px 1fr 200px;gap:0;min-height:calc(100vh - 64px)">
+
+    <!-- left nav tree -->
+    <nav style="border-right:1px solid var(--hairline);padding:32px 16px;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;align-self:start">
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;margin-bottom:4px">Start</div>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;background:var(--assay-soft);color:var(--assay-deep);font-weight:500">Getting started</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Concepts</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Quickstart</a>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;margin-bottom:4px">openfit</div>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Curve fitting</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Weighting</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">FitSpec</a>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;margin-bottom:4px">openassay</div>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Back-calculation</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Acceptance</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">Plate layouts</a>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;margin-bottom:4px">Reference</div>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">API reference</a>
+        <a href="#" style="display:block;font-size:13px;padding:5px 10px;border-radius:6px;margin-bottom:1px;color:var(--ink-secondary)">CLI</a>
+      </div>
+    </nav>
+
+    <!-- article -->
+    <article style="padding:48px 56px;max-width:720px">
+      <div style="font-size:13px;color:var(--ink-muted);margin-bottom:8px">Getting started</div>
+      <h1 style="font-size:36px;font-weight:600;letter-spacing:-.8px;margin:0 0 8px">Quickstart</h1>
+      <p style="font-size:16px;color:var(--ink-secondary);margin:0 0 36px">Run a full LBA from plate CSV to accepted run report in under ten lines.</p>
+
+      <h2 style="font-size:20px;font-weight:600;margin:0 0 14px" id="install">Install</h2>
+      <div style="background:var(--canvas-sunken);border:1px solid var(--hairline);border-radius:8px;padding:12px 16px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span class="mono" style="font-size:14px"><span style="color:var(--ink-faint)">$</span> pip install openassay openfit</span>
+        <button class="copy-btn mono" data-text="pip install openassay openfit" style="font-size:12px;font-weight:500;background:var(--canvas);border:1px solid var(--hairline-strong);border-radius:6px;padding:5px 10px;flex-shrink:0"><span class="copy-label">Copy</span></button>
+      </div>
+
+      <h2 style="font-size:20px;font-weight:600;margin:0 0 14px" id="end-to-end">End-to-end example</h2>
+      <div style="background:#0d1117;border:1px solid var(--hairline-strong);border-radius:10px;overflow:hidden;margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;flex-shrink:0"></span>
+          <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;flex-shrink:0"></span>
+          <span style="width:11px;height:11px;border-radius:50%;background:#28c840;flex-shrink:0"></span>
+          <span class="mono" style="font-size:11px;color:#8a929c;margin-left:6px">quickstart.py</span>
+        </div>
+        <pre class="mono" style="margin:0;padding:20px;font-size:13px;line-height:1.7;color:#c2c9d1">import openassay as oa
+
+plate = oa.read_plate("run148.csv")
+curve = oa.fit_standard_curve(
+    plate, model="4PL", weights="1/y^2",
+)
+
+print(curve.r_squared)         # 0.9994
+print(curve.lloq, curve.uloq)  # 0.625 640.0
+
+samples = oa.back_calculate(
+    plate.unknowns, curve,
+    dilution=plate.dilutions,
+)
+run = oa.evaluate_run(curve, samples, plate.qc)
+run.report("report.html")      # carries disclaimer
+print(run.accepted)            # True</pre>
+      </div>
+
+      <h2 style="font-size:20px;font-weight:600;margin:0 0 14px" id="what-you-get">What you get back</h2>
+      <p style="font-size:15px;color:var(--ink-secondary);margin:0 0 16px">After <span class="mono" style="font-size:13px;color:var(--ink)">evaluate_run()</span>, the acceptance table shows every calibrator and QC level:</p>
+      <div id="acceptance-table-docs" style="margin-bottom:28px;overflow-x:auto;border:1px solid var(--hairline);border-radius:10px;overflow:hidden"></div>
+
+      <div style="background:var(--info-soft);border:1px solid var(--info);border-radius:10px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start;margin-bottom:36px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.9" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1" stroke-linecap="round"/></svg>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:var(--ink-secondary)">This report was generated using openassay (open-source). Final acceptance decisions and regulatory interpretation should be reviewed by qualified bioanalytical scientists.</p>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--hairline);padding-top:20px">
+        <a href="#" style="font-size:14px;font-weight:500;color:var(--ink-secondary);display:flex;align-items:center;gap:6px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+          Introduction
+        </a>
+        <a href="#" style="font-size:14px;font-weight:500;color:var(--ink-secondary);display:flex;align-items:center;gap:6px">
+          Concepts
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </article>
+
+    <!-- right TOC -->
+    <div style="padding:32px 20px;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;align-self:start">
+      <div style="font-size:12px;font-weight:600;color:var(--ink-faint);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px">On this page</div>
+      <a href="#install" style="display:block;font-size:13px;color:var(--assay-deep);padding:4px 0;font-weight:500">Install</a>
+      <a href="#end-to-end" style="display:block;font-size:13px;color:var(--ink-secondary);padding:4px 0">End-to-end example</a>
+      <a href="#what-you-get" style="display:block;font-size:13px;color:var(--ink-secondary);padding:4px 0">What you get back</a>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const S = { theme:'light', route:'home', product:'openassay', well:null };
+
+// ══════════════════════════════════════
+// MATH
+// ══════════════════════════════════════
+function log10(x){ return Math.log(x)/Math.LN10; }
+function fourPL(x){ const A=0.05,D=3.25,C=18.5,B=1.05; return A+(D-A)/(1+Math.pow(C/x,B)); }
+
+const ROWS='ABCDEFGH';
+const CAL_CONCS=[0.156,0.625,2.5,10,40,160,640];
+const QC_VALS=[{label:'QC Low',val:1.21},{label:'QC Mid',val:2.18},{label:'QC High',val:2.94}];
+const ROL_COLORS={Standard:'rgba(29,78,216,.55)',QC:'rgba(13,148,136,.7)',Unknown:'rgba(107,114,128,.28)',Blank:'rgba(154,163,173,.18)'};
+
+function roleFor(r,c){
+  if(c<2){
+    const conc=CAL_CONCS[r]||0.078;
+    return {role:'Standard',label:'S'+(r+1),conc,resp:fourPL(conc)};
+  }
+  if(c===2){
+    if(r<2) return {role:'QC',label:'QC L',resp:1.21};
+    if(r<4) return {role:'QC',label:'QC M',resp:2.18};
+    if(r<6) return {role:'QC',label:'QC H',resp:2.94};
+    return {role:'Blank',label:'Blank',resp:0.04};
+  }
+  const v=(Math.sin(r*2.3+c*1.7)*0.5+0.5)*2.9+0.15;
+  return {role:'Unknown',label:'Unk',resp:+v.toFixed(3)};
+}
+
+// ══════════════════════════════════════
+// SVG GENERATORS
+// ══════════════════════════════════════
+function curveSvgStr(W,H,opt){
+  opt=opt||{};
+  const pl=opt.pl!=null?opt.pl:44, pr=opt.pr!=null?opt.pr:14;
+  const pt=opt.pt!=null?opt.pt:14, pb=opt.pb!=null?opt.pb:30;
+  const accent=opt.accent||'var(--fit)';
+  const pw=W-pl-pr, ph=H-pt-pb;
+  const xmin=-1, xmax=3, ymax=3.6;
+  const mx=lc=>pl+(lc-xmin)/(xmax-xmin)*pw;
+  const my=r=>pt+(1-r/ymax)*ph;
+  const mxc=c=>mx(log10(c));
+
+  let d='',bup='',bdn='';
+  for(let i=0;i<=120;i++){
+    const lc=xmin+(xmax-xmin)*i/120;
+    const c=Math.pow(10,lc);
+    const y=fourPL(c);
+    const X=mx(lc).toFixed(1), Y=my(y).toFixed(1);
+    d+=(i?'L':'M')+X+' '+Y+' ';
+    bup+=(i?'L':'M')+X+' '+my(Math.min(ymax,y*1.05+0.04)).toFixed(1)+' ';
+  }
+  for(let i=120;i>=0;i--){
+    const lc=xmin+(xmax-xmin)*i/120;
+    const c=Math.pow(10,lc);
+    const y=fourPL(c);
+    bdn+='L'+mx(lc).toFixed(1)+' '+my(Math.max(0,y*0.95-0.04)).toFixed(1)+' ';
+  }
+  const band=bup+bdn+'Z';
+
+  const noise=[1.03,0.98,1.015,1.0,0.99,1.02,0.985];
+  const pts=CAL_CONCS.map((c,i)=>({x:mxc(c),y:my(fourPL(c)*noise[i])}));
+  const lloqX=mxc(0.625), uloqX=mxc(640);
+
+  let s='';
+  // grid horizontals
+  for(let v=0;v<=3;v++){
+    const y=my(v);
+    s+=`<line x1="${pl}" y1="${y.toFixed(1)}" x2="${(W-pr).toFixed(1)}" y2="${y.toFixed(1)}" style="stroke:var(--hairline)" stroke-width="1"/>`;
+    s+=`<text x="${(pl-6).toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" style="fill:var(--ink-faint)" font-family="JetBrains Mono,monospace">${v}</text>`;
+  }
+  // x-axis labels
+  [[0.1,'0.1'],[1,'1'],[10,'10'],[100,'100'],[1000,'1k']].forEach(([c,l])=>{
+    const x=mxc(c);
+    if(x>pl-5&&x<W-pr+5){
+      s+=`<text x="${x.toFixed(1)}" y="${(H-pb+13).toFixed(1)}" text-anchor="middle" font-size="9" style="fill:var(--ink-faint)" font-family="JetBrains Mono,monospace">${l}</text>`;
+    }
+  });
+  // axes
+  s+=`<line x1="${pl}" y1="${(H-pb).toFixed(1)}" x2="${(W-pr).toFixed(1)}" y2="${(H-pb).toFixed(1)}" style="stroke:var(--ink-faint)" stroke-width="1"/>`;
+  s+=`<line x1="${pl}" y1="${pt}" x2="${pl}" y2="${(H-pb).toFixed(1)}" style="stroke:var(--ink-faint)" stroke-width="1"/>`;
+  // confidence band
+  s+=`<path d="${band}" style="fill:${accent}" opacity="0.12"/>`;
+  // curve
+  s+=`<path d="${d}" fill="none" style="stroke:${accent}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  // LLOQ / ULOQ
+  [[lloqX,'LLOQ'],[uloqX,'ULOQ']].forEach(([x,l])=>{
+    s+=`<line x1="${x.toFixed(1)}" y1="${pt}" x2="${x.toFixed(1)}" y2="${(H-pb).toFixed(1)}" style="stroke:var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s+=`<text x="${x.toFixed(1)}" y="${(pt+9).toFixed(1)}" text-anchor="middle" font-size="8" style="fill:var(--ink-muted)" font-family="JetBrains Mono,monospace">${l}</text>`;
+  });
+  // calibrator points
+  pts.forEach(p=>{
+    s+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.4" style="fill:${accent};stroke:var(--canvas)" stroke-width="1.5"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="4PL standard curve" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+function plateSvgStr(interactive){
+  const W=240,H=160,left=18,top=14;
+  const cw=(W-left-4)/12, ch=(H-top-6)/8;
+  let s='';
+  ROWS.split('').forEach((rl,r)=>{
+    s+=`<text x="${(left-5).toFixed(1)}" y="${(top+r*ch+ch/2+3).toFixed(1)}" text-anchor="end" font-size="7" style="fill:var(--ink-faint)" font-family="JetBrains Mono,monospace">${rl}</text>`;
+  });
+  for(let c=0;c<12;c++){
+    s+=`<text x="${(left+c*cw+cw/2).toFixed(1)}" y="${(top-3).toFixed(1)}" text-anchor="middle" font-size="6.5" style="fill:var(--ink-faint)" font-family="JetBrains Mono,monospace">${c+1}</text>`;
+  }
+  ROWS.split('').forEach((rl,r)=>{
+    for(let c=0;c<12;c++){
+      const role=roleFor(r,c);
+      const fill=ROL_COLORS[role.role]||ROL_COLORS.Unknown;
+      const di=interactive?` data-well="${r},${c}"`:'';
+      s+=`<rect${di} x="${(left+c*cw+1).toFixed(1)}" y="${(top+r*ch+1).toFixed(1)}" width="${(cw-2).toFixed(1)}" height="${(ch-2).toFixed(1)}" rx="2.5" style="fill:${fill}${interactive?';cursor:pointer':''}"/>`;
+    }
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="96-well plate layout" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+function residualSvgStr(){
+  const W=250,H=120,pl=28,pr=8,pt=10,pb=22;
+  const pw=W-pl-pr, ph=H-pt-pb;
+  const zero=pt+ph/2;
+  const res=[-0.04,0.018,-0.012,0.0,0.009,-0.022,0.015,0.03,-0.018];
+  let s=`<line x1="${pl}" y1="${zero.toFixed(1)}" x2="${(W-pr).toFixed(1)}" y2="${zero.toFixed(1)}" style="stroke:var(--ink-faint)" stroke-width="1"/>`;
+  [-0.05,0,0.05].forEach(v=>{
+    const y=zero-(v/0.06)*(ph/2);
+    if(v!==0) s+=`<line x1="${pl}" y1="${y.toFixed(1)}" x2="${(W-pr).toFixed(1)}" y2="${y.toFixed(1)}" style="stroke:var(--hairline)" stroke-width="1" stroke-dasharray="2 3"/>`;
+    s+=`<text x="${(pl-5).toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="8" style="fill:var(--ink-faint)" font-family="JetBrains Mono,monospace">${v.toFixed(2)}</text>`;
+  });
+  res.forEach((v,i)=>{
+    const x=pl+(i+0.5)/res.length*pw;
+    const y=zero-(v/0.06)*(ph/2);
+    s+=`<line x1="${x.toFixed(1)}" y1="${zero.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" style="stroke:var(--fit)" stroke-width="1" opacity=".35"/>`;
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" style="fill:var(--fit)"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+// ══════════════════════════════════════
+// TABLE GENERATORS
+// ══════════════════════════════════════
+function statusPill(kind,label){
+  const cfg={
+    ok:'color:var(--ok);background:var(--ok-soft)',
+    warn:'color:var(--warn);background:var(--warn-soft)',
+    fail:'color:var(--fail);background:var(--fail-soft)',
+  };
+  return `<span class="mono" style="font-size:11px;padding:2px 8px;border-radius:9999px;font-weight:600;${cfg[kind]||cfg.ok}">${label}</span>`;
+}
+
+const BACKCALC_ROWS=[
+  {id:'S-001',resp:'1.842',pred:'12.4',dil:'1',reported:'12.4',status:'ok',flag:'In range'},
+  {id:'S-002',resp:'0.214',pred:'0.48',dil:'1',reported:'&lt;LLOQ',status:'warn',flag:'&lt;LLOQ'},
+  {id:'S-003',resp:'3.180',pred:'—',dil:'1',reported:'&gt;ULOQ',status:'fail',flag:'&gt;ULOQ'},
+  {id:'S-004',resp:'1.104',pred:'4.61',dil:'1',reported:'4.61',status:'ok',flag:'In range'},
+  {id:'S-005',resp:'2.451',pred:'41.7',dil:'2',reported:'83.4',status:'ok',flag:'In range'},
+  {id:'S-006',resp:'1.980',pred:'16.8',dil:'1',reported:'16.8',status:'ok',flag:'In range'},
+];
+
+function backcalcMiniHtml(){
+  let rows='';
+  BACKCALC_ROWS.forEach(r=>{
+    rows+=`<tr>
+      <td class="mono" style="padding:8px 14px;border-bottom:1px solid var(--hairline);font-size:12px">${r.id}</td>
+      <td class="mono" style="padding:8px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r.resp}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--hairline);font-size:12px">${statusPill(r.status,r.flag)}</td>
+    </tr>`;
+  });
+  return `<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="padding:8px 14px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">ID</th>
+      <th style="padding:8px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Resp</th>
+      <th style="padding:8px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Result</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function backcalcFullHtml(){
+  let rows='';
+  BACKCALC_ROWS.forEach(r=>{
+    rows+=`<tr>
+      <td class="mono" style="padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:12px">${r.id}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r.resp}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r.pred}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px">${r.dil}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px">${r.reported}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid var(--hairline)">${statusPill(r.status,r.flag)}</td>
+    </tr>`;
+  });
+  return `<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">ID</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Resp</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Pred</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Dil</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Reported</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Flag</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+const ACCEPT_ROWS=[
+  {level:'LLOQ',nominal:'0.625','%RE':'+8.4','%CV':'12.1',n:6,status:'warn',verdict:'Pass'},
+  {level:'Low', nominal:'1.88', '%RE':'-3.2','%CV':'5.6', n:6,status:'ok',  verdict:'Pass'},
+  {level:'Mid', nominal:'25.0', '%RE':'+1.1','%CV':'3.8', n:6,status:'ok',  verdict:'Pass'},
+  {level:'High',nominal:'480',  '%RE':'+4.7','%CV':'6.2', n:6,status:'ok',  verdict:'Pass'},
+  {level:'ULOQ',nominal:'640',  '%RE':'-6.8','%CV':'9.4', n:6,status:'ok',  verdict:'Pass'},
+];
+
+function acceptanceTableHtml(){
+  let rows='';
+  ACCEPT_ROWS.forEach(r=>{
+    rows+=`<tr>
+      <td style="padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:13px;font-weight:500">${r.level}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r.nominal}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r['%RE']}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r['%CV']}</td>
+      <td class="mono" style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${r.n}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid var(--hairline)">${statusPill(r.status,r.verdict)}</td>
+    </tr>`;
+  });
+  return `<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Level</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Nominal</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">%RE</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">%CV</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">n</th>
+      <th style="padding:9px 10px;border-bottom:1px solid var(--hairline);font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left">Verdict</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function paramTableHtml(){
+  const params=[
+    {name:'Bottom (A)',val:'0.050',se:'±0.012'},
+    {name:'Top (D)',   val:'3.250',se:'±0.041'},
+    {name:'EC50 (C)',  val:'18.50',se:'±0.62'},
+    {name:'Slope (B)', val:'1.050',se:'±0.030'},
+  ];
+  let rows='';
+  params.forEach(p=>{
+    rows+=`<tr>
+      <td style="padding:7px 12px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-secondary)">${p.name}</td>
+      <td class="mono" style="padding:7px 10px;border-bottom:1px solid var(--hairline);font-size:12px;text-align:right">${p.val}</td>
+      <td class="mono" style="padding:7px 10px;border-bottom:1px solid var(--hairline);font-size:12px;color:var(--ink-muted)">${p.se}</td>
+    </tr>`;
+  });
+  return `<div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px">4PL parameters</div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="padding:7px 12px;border-bottom:1px solid var(--hairline);font-size:10px;font-weight:600;color:var(--ink-faint);text-align:left">Param</th>
+      <th style="padding:7px 10px;border-bottom:1px solid var(--hairline);font-size:10px;font-weight:600;color:var(--ink-faint);text-align:right">Value</th>
+      <th style="padding:7px 10px;border-bottom:1px solid var(--hairline);font-size:10px;font-weight:600;color:var(--ink-faint);text-align:left">SE</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ══════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════
+function renderSvgs(){
+  document.querySelectorAll('.svg-wrap-hero-curve').forEach(el=>{
+    el.innerHTML=curveSvgStr(320,200,{accent:'var(--fit)',pl:30,pb:24,pt:10,pr:8});
+  });
+  document.querySelectorAll('.svg-wrap-plate').forEach(el=>{
+    el.innerHTML=plateSvgStr(false);
+  });
+  document.querySelectorAll('.svg-wrap-residuals').forEach(el=>{
+    el.innerHTML=residualSvgStr();
+  });
+  document.querySelectorAll('.svg-wrap-preview-curve').forEach(el=>{
+    el.innerHTML=curveSvgStr(560,300,{accent:'var(--fit)'});
+  });
+  document.querySelectorAll('.svg-wrap-dash-curve').forEach(el=>{
+    el.innerHTML=curveSvgStr(560,300,{accent:'var(--fit)'});
+  });
+  document.querySelectorAll('.svg-wrap-dash-plate').forEach(el=>{
+    el.innerHTML=plateSvgStr(true);
+  });
+}
+
+function renderTables(){
+  const bm=document.getElementById('backcalc-mini');
+  if(bm) bm.innerHTML=backcalcMiniHtml();
+  const bf=document.getElementById('backcalc-full');
+  if(bf) bf.innerHTML=backcalcFullHtml();
+  const ad=document.getElementById('acceptance-table-dash');
+  if(ad) ad.innerHTML=acceptanceTableHtml();
+  const adc=document.getElementById('acceptance-table-docs');
+  if(adc) adc.innerHTML=acceptanceTableHtml();
+  const pt=document.getElementById('param-table');
+  if(pt) pt.innerHTML=paramTableHtml();
+}
+
+// ══════════════════════════════════════
+// STATE UPDATES
+// ══════════════════════════════════════
+function navigate(route){
+  S.route=route;
+  ['home','dashboard','docs'].forEach(r=>{
+    const el=document.getElementById('page-'+r);
+    if(el) el.style.display=(r===route?(r==='dashboard'?'block':'block'):'none');
+  });
+  // nav button active styles
+  const navMap={home:'nav-home',docs:'nav-docs',dashboard:'nav-dash'};
+  Object.entries(navMap).forEach(([r,id])=>{
+    const btn=document.getElementById(id);
+    if(!btn) return;
+    if(r===route){
+      btn.style.background='var(--canvas-sunken)';btn.style.color='var(--ink)';
+    } else {
+      btn.style.background='';btn.style.color='var(--ink-secondary)';
+    }
+  });
+}
+
+function setProduct(p){
+  S.product=p;
+  const fitBtn=document.getElementById('tab-fit');
+  const assayBtn=document.getElementById('tab-assay');
+  if(p==='openfit'){
+    fitBtn.style.cssText='padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;background:var(--canvas);color:var(--fit);box-shadow:var(--l1)';
+    assayBtn.style.cssText='padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;color:var(--ink-muted)';
+  } else {
+    fitBtn.style.cssText='padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;color:var(--ink-muted)';
+    assayBtn.style.cssText='padding:5px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:all .15s;background:var(--canvas);color:var(--assay);box-shadow:var(--l1)';
+  }
+}
+
+function toggleTheme(){
+  S.theme=S.theme==='light'?'dark':'light';
+  const app=document.getElementById('app');
+  if(S.theme==='dark'){
+    app.setAttribute('data-theme','dark');
+  } else {
+    app.removeAttribute('data-theme');
+  }
+  const icon=document.getElementById('theme-icon');
+  if(S.theme==='dark'){
+    icon.innerHTML='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke-linecap="round"/>';
+  } else {
+    icon.innerHTML='<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  }
+  // SVG inline styles inherit CSS vars — no re-render needed; CSS cascade handles it
+}
+
+// ══════════════════════════════════════
+// COPY BUTTON
+// ══════════════════════════════════════
+function setupCopyButtons(){
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('.copy-btn');
+    if(!btn) return;
+    const text=btn.dataset.text||'pip install openassay';
+    navigator.clipboard.writeText(text).catch(()=>{
+      const ta=document.createElement('textarea');
+      ta.value=text;ta.style.cssText='position:fixed;opacity:0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');}catch(_){}
+      document.body.removeChild(ta);
+    });
+    const label=btn.querySelector('.copy-label');
+    if(label){ label.textContent='Copied ✓'; setTimeout(()=>{label.textContent='Copy';},1400); }
+  });
+}
+
+// ══════════════════════════════════════
+// PLATE HOVER
+// ══════════════════════════════════════
+function setupPlateHover(){
+  const panel=document.getElementById('plate-panel');
+  const tip=document.getElementById('well-tooltip');
+  if(!panel||!tip) return;
+  panel.addEventListener('mouseover',e=>{
+    const rect=e.target.closest('[data-well]');
+    if(!rect) return;
+    const [r,c]=rect.getAttribute('data-well').split(',').map(Number);
+    const role=roleFor(r,c);
+    const wellId=ROWS[r]+(c+1);
+    tip.innerHTML=`<strong>${wellId}</strong> · ${role.role} · resp ${role.resp.toFixed?role.resp.toFixed(3):role.resp}`;
+    tip.style.display='block';
+    // position relative to the rect element
+    const panelRect=panel.getBoundingClientRect();
+    const rectBB=rect.getBoundingClientRect();
+    const cx=rectBB.left+rectBB.width/2-panelRect.left;
+    const cy=rectBB.top-panelRect.top;
+    tip.style.left=cx+'px';
+    tip.style.top=(cy-8)+'px';
+    tip.style.transform='translateX(-50%) translateY(-100%)';
+    tip.style.bottom='';
+  });
+  panel.addEventListener('mouseleave',()=>{ tip.style.display='none'; });
+}
+
+// ══════════════════════════════════════
+// ROUTE BUTTONS
+// ══════════════════════════════════════
+function setupNav(){
+  document.getElementById('nav-home').addEventListener('click',()=>navigate('home'));
+  document.getElementById('nav-docs').addEventListener('click',()=>navigate('docs'));
+  document.getElementById('nav-dash').addEventListener('click',()=>navigate('dashboard'));
+  document.getElementById('logo-btn').addEventListener('click',()=>navigate('home'));
+  document.getElementById('hero-get-started').addEventListener('click',()=>navigate('docs'));
+  document.getElementById('preview-dash-btn').addEventListener('click',()=>navigate('dashboard'));
+  document.getElementById('tab-fit').addEventListener('click',()=>setProduct('openfit'));
+  document.getElementById('tab-assay').addEventListener('click',()=>setProduct('openassay'));
+  document.getElementById('theme-btn').addEventListener('click',toggleTheme);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init(){
+  renderSvgs();
+  renderTables();
+  setupCopyButtons();
+  setupPlateHover();
+  setupNav();
+  navigate('home');
+}
+
+init();
+</script>
+</body>
+</html>
