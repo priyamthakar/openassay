@@ -19,7 +19,7 @@ bioanalytical acceptance, it belongs in openassay.
 
 ## Status
 
-v1.0.0 hardening branch. Current scope includes standard-curve fitting,
+v1.0.0 release candidate. Current scope includes standard-curve fitting,
 sample back-calculation, LLOQ/ULOQ range decisions, calibrator/QC acceptance,
 plate parsing, batch helpers, relative potency, ADA cut points, HTML/Markdown/
 PDF/DOCX reports, and CLI entry points. See `ROADMAP.md` and

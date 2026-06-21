@@ -9,6 +9,8 @@ deprecation shim where practical).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-22
+
 ### Added
 - `docs/PROJECT_PLAN.md`: end-to-end engineering plan from v0.1.0 to v1.0.0.
 - `.gitattributes`: enforce LF line endings to stop spurious CRLF/LF diffs.
@@ -113,5 +115,6 @@ deprecation shim where practical).
 - HTML and Markdown reports with the mandatory bioanalytical review disclaimer.
 - CLI (`openassay version`, `fit-curve`, `backcalc`) behind the `[cli]` extra.
 
-[Unreleased]: https://github.com/priyamthakar/openassay/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/priyamthakar/openassay/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/priyamthakar/openassay/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/priyamthakar/openassay/releases/tag/v0.1.0
