@@ -19,12 +19,13 @@ deprecation shim where practical).
 - `src/openassay/errors.py`: openassay exception hierarchy (`OpenassayError`
   and subclasses; `NonFiniteDataError` subclasses `ValueError`).
 - `scipy` added to core dependencies (already used by back-calculation).
+- End-to-end CSV examples for standard-curve fitting and sample back-calculation.
 
 ### Planned (v0.1.1 hardening, see PROJECT_PLAN.md §9)
 - Replace private `FitResult._model` access with a public/closed-form inverse.
 - Compute %RE (accuracy) and %CV (precision) in acceptance from replicates.
 - `tests/test_invariants.py` covering the nine correctness rules.
-- `docs/validation.md` and `examples/`.
+- `docs/validation.md`.
 
 ## [0.1.0] - 2026-06-03
 
