@@ -31,6 +31,7 @@ deprecation shim where practical).
 - Initial 96-well tidy CSV plate reader with duplicate-well and non-finite
   response validation.
 - Mean blank subtraction and replicate response collapse for parsed plate data.
+- Missing expected-well detection for plate layouts and tidy plate ingestion.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
 - `tests/test_invariants.py` covering implemented correctness invariants.

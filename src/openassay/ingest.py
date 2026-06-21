@@ -23,7 +23,12 @@ def _optional_string(value: Any) -> str | None:
     return text if text else None
 
 
-def read_plate(path: str | Path, *, format: str = "tidy") -> PlateData:
+def read_plate(
+    path: str | Path,
+    *,
+    format: str = "tidy",
+    expected_wells: list[str] | None = None,
+) -> PlateData:
     """Read tidy long-format plate CSV data."""
     if format != "tidy":
         raise ValueError("Only tidy plate format is currently supported.")
@@ -45,4 +50,7 @@ def read_plate(path: str | Path, *, format: str = "tidy") -> PlateData:
         )
         for row in df.itertuples(index=False)
     ]
-    return PlateData(layout=PlateLayout(wells))
+    layout = PlateLayout(wells)
+    if expected_wells is not None:
+        layout.require_wells(expected_wells)
+    return PlateData(layout=layout)

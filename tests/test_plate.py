@@ -30,6 +30,23 @@ def test_plate_layout_rejects_duplicate_wells() -> None:
         PlateLayout([well, well])
 
 
+def test_plate_layout_reports_missing_expected_wells() -> None:
+    """Layouts should be able to report absent expected wells."""
+    layout = PlateLayout([make_plate_well(well="A1", role="standard", response=10.0)])
+
+    missing = layout.missing_wells(["A1", "A2", "B1"])
+
+    assert [str(well) for well in missing] == ["A2", "B1"]
+
+
+def test_plate_layout_can_require_expected_wells() -> None:
+    """Missing expected wells should raise a plate-layout error when required."""
+    layout = PlateLayout([make_plate_well(well="A1", role="standard", response=10.0)])
+
+    with pytest.raises(PlateLayoutError, match="Missing expected wells: A2"):
+        layout.require_wells(["A1", "A2"])
+
+
 def test_read_plate_tidy_csv(tmp_path) -> None:
     """Tidy CSV plate input should parse wells, roles, and responses."""
     path = tmp_path / "plate.csv"
@@ -51,6 +68,15 @@ def test_read_plate_tidy_csv(tmp_path) -> None:
     assert [str(well.well) for well in plate.wells] == ["A1", "A2", "A3"]
     assert len(plate.layout.by_role("standard")) == 1
     assert plate.wells[2].nominal_concentration is None
+
+
+def test_read_plate_can_require_expected_wells(tmp_path) -> None:
+    """Tidy ingestion should fail when explicitly required wells are absent."""
+    path = tmp_path / "plate.csv"
+    path.write_text("well,role,response\nA1,standard,12.5\n", encoding="utf-8")
+
+    with pytest.raises(PlateLayoutError, match="Missing expected wells: A2"):
+        read_plate(path, expected_wells=["A1", "A2"])
 
 
 def test_read_plate_rejects_non_finite_response(tmp_path) -> None:

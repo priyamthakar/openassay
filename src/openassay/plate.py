@@ -74,6 +74,19 @@ class PlateLayout:
         """Return wells with the requested role."""
         return [well for well in self.wells if well.role == role]
 
+    def missing_wells(self, expected_wells: list[str]) -> list[Well]:
+        """Return expected wells that are absent from the layout."""
+        observed = {plate_well.well for plate_well in self.wells}
+        expected = [Well.parse(well) for well in expected_wells]
+        return [well for well in expected if well not in observed]
+
+    def require_wells(self, expected_wells: list[str]) -> None:
+        """Raise if any expected wells are absent from the layout."""
+        missing = self.missing_wells(expected_wells)
+        if missing:
+            missing_text = ", ".join(str(well) for well in missing)
+            raise PlateLayoutError(f"Missing expected wells: {missing_text}.")
+
 
 @dataclass
 class PlateData:
