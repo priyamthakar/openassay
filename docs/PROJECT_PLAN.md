@@ -450,7 +450,7 @@ never `--no-verify`, never force-push.
 - **Risks:** openfit/R numerical differences; mitigate with tolerance bands and
   documented seeds.
 
-### v0.2.0 — Plate Layouts
+### v0.2.0 — Plate Layouts (DONE)
 
 - **Goal:** ingest real plate data and turn it into curve/sample inputs.
 - **Modules/API:** `plate.PlateLayout`, `plate.PlateData`, `ingest.read_plate`.
@@ -722,7 +722,7 @@ disclaimer; validation suite documents agreement with references.
 2. Add `.gitattributes` (LF) and normalize line endings to kill the CRLF churn.
 3. Add external reference-output validation fixtures; tag the hardened result
    `v0.1.1`.
-4. Then proceed to v0.2.0 (plate layouts) on `agent/openassay-v020`.
+4. Proceed to v0.3.0 (LLOQ/ULOQ and dilution) on a new phase branch.
 
 > This plan is a living document. Update it at the start and end of each phase so
 > it always reflects the real state of openassay.

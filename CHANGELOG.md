@@ -34,6 +34,8 @@ deprecation shim where practical).
 - Missing expected-well detection for plate layouts and tidy plate ingestion.
 - Matrix-format plate CSV reader using a separate tidy layout map.
 - Excel (`.xlsx`/`.xls`) support for tidy and matrix plate readers.
+- Roadmap/project-plan status updated for completed v0.1.1/v0.2.0 work and
+  v0.3.0 as the next active phase.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
