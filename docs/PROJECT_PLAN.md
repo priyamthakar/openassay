@@ -516,8 +516,10 @@ never `--no-verify`, never force-push.
     `reportable=False` and `point_estimate=None` (no number is emitted).
   - Cite USP <1032>/<1034> conceptually; never reproduce paywalled text.
 - **Tests:** synthetic parallel fixture → reportable potency near the true ratio;
-  non-parallel fixture → not reportable; at least one external reference check.
-- **Gate:** parallel/non-parallel fixtures + reference check + universal gate.
+  non-parallel fixture → not reportable; stored hand-computed reference-output
+  fixture.
+- **Gate:** parallel/non-parallel fixtures + stored reference check + universal
+  gate.
 - **Risks:** choice of F-test vs equivalence default; expose both, document the
   trade-off, default to the more conservative reportability.
 

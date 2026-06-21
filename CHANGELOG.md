@@ -45,6 +45,8 @@ deprecation shim where practical).
   as the next active phase.
 - Initial equivalence-based `test_parallelism` and EC50-ratio
   `relative_potency`, with potency suppressed when parallelism fails.
+- Stored parallelism/potency reference fixture with hand-computed expected
+  ratios and USP <1032>/<1034> conceptual provenance.
 - CLI `openassay plate parse` command for plate role and replicate summaries.
 - `LevelStats` and `AcceptanceResult.level_stats` for per-level %bias and %CV
   acceptance checks from replicate nominal concentrations.
