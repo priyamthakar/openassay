@@ -511,7 +511,7 @@ never `--no-verify`, never force-push.
     Hill parameters, which modern guidance prefers). Method selectable.
   - **Relative potency** estimated from the horizontal shift between parallel
     curves (EC50 ratio for 4PL/5PL, or intercept difference for parallel lines),
-    with a confidence interval derived from openfit covariance.
+    with a confidence interval derived from openfit covariance when available.
   - **Invariant 7:** if parallelism is not demonstrated, `PotencyResult` returns
     `reportable=False` and `point_estimate=None` (no number is emitted).
   - Cite USP <1032>/<1034> conceptually; never reproduce paywalled text.

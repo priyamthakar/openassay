@@ -53,9 +53,11 @@ def _read_fit_result_json(path: Path) -> SimpleNamespace:
     params = payload.get("params")
     if not isinstance(params, dict):
         raise ValueError("fit result JSON must contain a params object")
+    covariance = payload.get("covariance")
     return SimpleNamespace(
         model_id=_normalize_model(model),
         params={str(name): float(value) for name, value in params.items()},
+        covariance=covariance,
     )
 
 
@@ -159,6 +161,9 @@ if typer is not None:
             print("Relative potency: not reportable")
         else:
             print(f"Relative potency: {result.point_estimate:.6g}")
+        if result.confidence_interval is not None:
+            lower, upper = result.confidence_interval
+            print(f"{result.confidence:.0%} CI: {lower:.6g} to {upper:.6g}")
         for reason in result.parallelism.reasons:
             print(f"- {reason}")
 

@@ -103,7 +103,13 @@ def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
         """
 {
   "model_id": "hill4p",
-  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0}
+  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 10.0, "HillSlope": 1.0},
+  "covariance": [
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.04, 0.0],
+    [0.0, 0.0, 0.0, 0.0]
+  ]
 }
 """.strip(),
         encoding="utf-8",
@@ -112,7 +118,13 @@ def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
         """
 {
   "model_id": "hill4p",
-  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 5.0, "HillSlope": 1.0}
+  "params": {"Bottom": 1.0, "Top": 100.0, "EC50": 5.0, "HillSlope": 1.0},
+  "covariance": [
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.01, 0.0],
+    [0.0, 0.0, 0.0, 0.0]
+  ]
 }
 """.strip(),
         encoding="utf-8",
@@ -123,3 +135,4 @@ def test_cli_parallelism_reports_gated_relative_potency(tmp_path) -> None:
     assert result.exit_code == 0
     assert "Parallel: True" in result.output
     assert "Relative potency: 2" in result.output
+    assert "95% CI:" in result.output

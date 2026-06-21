@@ -24,6 +24,8 @@ Covered in the current test suite:
 - Relative potency is suppressed when parallelism fails.
 - A stored parallelism reference fixture checks hand-computed parameter ratios
   and EC50-ratio potency.
+- EC50-ratio potency confidence intervals are derived from openfit covariance
+  when finite EC50 variances are available.
 - HTML and Markdown reports contain the required openassay disclaimer.
 - Bundled CSV examples run through the CLI and generate reports.
 - A synthetic FDA/ICH M10-style calibration/QC fixture runs through fitting,
@@ -76,9 +78,9 @@ python -m mypy src/openassay
 python -m build
 ```
 
-Latest local evidence after the v0.4 parallelism reference fixture was added:
+Latest local evidence after the v0.4 potency confidence interval was added:
 
-- `python -m pytest`: 69 passed.
+- `python -m pytest`: 71 passed.
 - `python -m ruff check src tests`: passed.
 - `python -m ruff format --check src tests`: passed.
 - `python -m mypy src/openassay`: passed.
